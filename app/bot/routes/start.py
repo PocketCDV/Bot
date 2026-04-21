@@ -1,7 +1,7 @@
 from aiogram import Router
 from aiogram.filters import CommandStart
 
-from app.scenes.start import StartScene
+from app.bot.scenes.start import StartScene
 
 start_router = Router(name=__name__)
 

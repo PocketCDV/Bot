@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings
 
@@ -6,6 +8,8 @@ class Config(BaseSettings):
     """
     Provides credentials for all services, telegram bot token and webhook data, etc.
     """
+
+    TITLE: ClassVar[str] = "PocketCDV"
 
     telegram_bot_token: SecretStr
     """

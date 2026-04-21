@@ -1,4 +1,4 @@
-from app.actions.base import BaseAction
+from app.bot.actions.base import BaseAction
 
 
 class ProceedAction(BaseAction, prefix="proceed"):

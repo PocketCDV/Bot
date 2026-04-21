@@ -2,12 +2,12 @@ from aiogram.fsm.scene import Scene, on
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, WebAppInfo
 from aiogram.utils.i18n import gettext as _
 
-from app.actions.proceed import ProceedAction
+from app.bot.actions.proceed import ProceedAction
 
 
 class StartScene(Scene, state="start", reset_data_on_enter=True, reset_history_on_enter=True):
     """
-    Base entry scene, introduction for new users and a home page for logged in users.
+    Base entry scene, introduction for new users and a home page for logged-in users.
     """
 
     @on.message.enter()

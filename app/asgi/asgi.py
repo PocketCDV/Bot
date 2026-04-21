@@ -3,12 +3,15 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from pydantic import ValidationError
 from redis.asyncio import Redis
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from app.asgi.api.router import api_router
 from app.asgi.controllers.session import SessionController
+from app.asgi.limiter import limiter
 from app.asgi.logging import logger
 from config import config
 
@@ -19,6 +22,9 @@ async def lifespan(fastapi_app: FastAPI):
 
     fastapi_app.state.config = config
     fastapi_app.state.session_controller = SessionController(redis)
+
+    fastapi_app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
     yield
 

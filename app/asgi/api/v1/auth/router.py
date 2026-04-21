@@ -7,10 +7,12 @@ from aiohttp import ClientSession, ClientTimeout, ClientConnectorCertificateErro
 from certifi import where
 from fastapi import APIRouter, Depends, HTTPException
 from starlette import status
+from starlette.requests import Request
 
 from app.asgi.api.v1.auth.models import LoginModel
 from app.asgi.controllers.session import SessionController
 from app.asgi.dependencies import config_dependency, session_controller_dependency
+from app.asgi.limiter import limiter
 from config import Config
 
 auth_router: APIRouter = APIRouter(prefix="/auth", tags=["Auth"])
@@ -20,7 +22,9 @@ auth_router: APIRouter = APIRouter(prefix="/auth", tags=["Auth"])
     "/login",
     status_code=status.HTTP_204_NO_CONTENT,
 )
+@limiter.limit("5/minute")
 async def login(
+        request: Request,
         login_model: LoginModel,
         config: Annotated[Config, Depends(config_dependency)],
         session_controller: Annotated[SessionController, Depends(session_controller_dependency)],

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-21 15:54+0200\n"
+"POT-Creation-Date: 2026-04-21 16:41+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app./scenes/start.py:12
-msgid "message.start"
+#: app./scenes/start.py:19
+msgid "message.greeting_1"
+msgstr ""
+
+#: app./scenes/start.py:23
+msgid "button.proceed"
+msgstr ""
+
+#: app./scenes/start.py:36
+msgid "message.greeting_2"
+msgstr ""
+
+#: app./scenes/start.py:41
+msgid "button.login_via_vc"
 msgstr ""
 

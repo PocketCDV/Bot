@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-21 15:54+0200\n"
-"PO-Revision-Date: 2026-04-21 15:55+0200\n"
+"POT-Creation-Date: 2026-04-21 16:41+0200\n"
+"PO-Revision-Date: 2026-04-21 16:43+0200\n"
 "Last-Translator: \n"
 "Language-Team: en <LL@li.org>\n"
 "Language: en\n"
@@ -19,6 +19,26 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 "X-Generator: Poedit 3.9\n"
 
-#: app./scenes/start.py:12
-msgid "message.start"
-msgstr "Well met, {first_name}!"
+#: app./scenes/start.py:19
+msgid "message.greeting_1"
+msgstr ""
+"<b>Greetings, {first_name}!</b>\n"
+"\n"
+"Introducing <b>PocketCDV</b> - a Telegram bot for tracking class schedules at Collegium da Vinci. Our goal is simplicity and accessibility: wherever you are, just two taps and you'll instantly know when your next class is.\n"
+"\n"
+"Many new features are already in development, and we'll keep you updated on all the latest changes."
+
+#: app./scenes/start.py:23
+msgid "button.proceed"
+msgstr "Proceed"
+
+#: app./scenes/start.py:36
+msgid "message.greeting_2"
+msgstr ""
+"To get started, we'll need your Wirtualna Uczelnia login credentials. You can enter them by tapping the button below.\n"
+"\n"
+"A note on privacy: we never store any personal information - your name, email address, or password are never saved. Your schedule is also never stored and is fetched fresh every time you use the bot."
+
+#: app./scenes/start.py:41
+msgid "button.login_via_vc"
+msgstr "Log in via Wirtualna Uczelnia"

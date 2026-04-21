@@ -1,0 +1,15 @@
+services:
+  # Redis database for operating games and caching data.
+  bot_redis:
+    container_name: bot_redis
+    image: redis:latest
+    restart: on-failure
+    command: "redis-server /usr/local/etc/redis/redis.conf"
+    ports:
+      - "6379:6379"
+    volumes:
+      - "redis-data:/data"
+      - "./redis.conf:/usr/local/etc/redis/redis.conf"
+
+volumes:
+  redis-data:

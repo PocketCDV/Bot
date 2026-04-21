@@ -46,5 +46,5 @@ async def login(
         session_controller.set_session,
         telegram_id=telegram_init_data.user.id,
         session_id=session_id,
-        expire=1800,
+        expire=None,
     )

@@ -7,6 +7,7 @@ from redis.asyncio import Redis
 
 from app.assets.controllers.session import SessionController
 from app.bot.routes.start import start_router
+from app.bot.scenes.home import HomeScene
 from app.bot.scenes.start import StartScene
 from config import config
 
@@ -43,6 +44,7 @@ def create_dispatcher() -> Dispatcher:
 
     SceneRegistry(new_dispatcher).add(
         StartScene,
+        HomeScene,
     )
 
     return new_dispatcher

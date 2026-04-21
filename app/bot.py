@@ -1,9 +1,12 @@
 from aiogram import Dispatcher
+from aiogram.fsm.scene import SceneRegistry
 from aiogram.fsm.storage.base import DefaultKeyBuilder
 from aiogram.fsm.storage.redis import RedisStorage
-from aiogram.utils.i18n import I18n
+from aiogram.utils.i18n import I18n, ConstI18nMiddleware
 from redis.asyncio import Redis
 
+from app.routes.start import start_router
+from app.scenes.start import StartScene
 from config import config
 
 
@@ -25,6 +28,19 @@ def create_dispatcher() -> Dispatcher:
         config=config,
         i18n=i18n,
         redis=redis,
+    )
+
+    ConstI18nMiddleware(
+        locale="en",
+        i18n=i18n,
+    ).setup(new_dispatcher)
+
+    new_dispatcher.include_routers(
+        start_router,
+    )
+
+    SceneRegistry(new_dispatcher).add(
+        StartScene,
     )
 
     return new_dispatcher

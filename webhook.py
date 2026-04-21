@@ -69,4 +69,8 @@ if __name__ == "__main__":
     access_logger.setLevel(logging.ERROR)
     event.setLevel(logging.ERROR)
 
+    if sys.platform == "win32":
+        loop = asyncio.SelectorEventLoop()
+        asyncio.set_event_loop(loop)
+
     main()

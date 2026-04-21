@@ -24,9 +24,6 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    if sys.platform == "win32":  # Using SelectorEventLoop on Windows to avoid psycopg exceptions
-        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
     logging.basicConfig(
         level=logging.INFO,
         format="%(levelname)s %(asctime)s - %(message)s",
@@ -34,4 +31,9 @@ if __name__ == "__main__":
     )
     event.setLevel(logging.ERROR)
 
-    asyncio.run(main())
+    if sys.platform == "win32":
+        loop = asyncio.SelectorEventLoop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(main())
+    else:
+        asyncio.run(main())

@@ -1,6 +1,6 @@
 from starlette.requests import Request
 
-from app.asgi.controllers.session import SessionController
+from app.assets.controllers.session import SessionController
 from config import Config
 
 

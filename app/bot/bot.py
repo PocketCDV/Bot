@@ -5,6 +5,7 @@ from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.utils.i18n import I18n, ConstI18nMiddleware
 from redis.asyncio import Redis
 
+from app.assets.controllers.session import SessionController
 from app.bot.routes.start import start_router
 from app.bot.scenes import StartScene
 from config import config
@@ -28,6 +29,7 @@ def create_dispatcher() -> Dispatcher:
         config=config,
         i18n=i18n,
         redis=redis,
+        session_controller=SessionController(redis),
     )
 
     ConstI18nMiddleware(

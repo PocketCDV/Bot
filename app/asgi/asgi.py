@@ -10,7 +10,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from app.asgi.api.router import api_router
-from app.asgi.controllers.session import SessionController
+from app.assets.controllers.session import SessionController
 from app.asgi.limiter import limiter
 from app.asgi.logging import logger
 from config import config

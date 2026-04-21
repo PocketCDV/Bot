@@ -39,7 +39,7 @@ class StartScene(Scene, state="start", reset_data_on_enter=True, reset_history_o
                     [
                         InlineKeyboardButton(
                             text=_("button.login_via_vc"),
-                            web_app=WebAppInfo(url="https://github.com/PocketCDV")
+                            web_app=WebAppInfo(url="https://card-sentence-cats-cook.trycloudflare.com")
                         )
                     ]
                 ]

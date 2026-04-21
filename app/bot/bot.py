@@ -7,7 +7,7 @@ from redis.asyncio import Redis
 
 from app.assets.controllers.session import SessionController
 from app.bot.routes.start import start_router
-from app.bot.scenes import StartScene
+from app.bot.scenes.start import StartScene
 from config import config
 
 

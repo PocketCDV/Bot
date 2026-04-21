@@ -6,6 +6,7 @@ from redis.asyncio import Redis
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from starlette import status
+from starlette.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
@@ -23,14 +24,21 @@ async def lifespan(fastapi_app: FastAPI):
     fastapi_app.state.config = config
     fastapi_app.state.session_controller = SessionController(redis)
 
-    fastapi_app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
     yield
 
     await redis.close()
 
 app = FastAPI(title=config.TITLE, lifespan=lifespan)
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(api_router)
 

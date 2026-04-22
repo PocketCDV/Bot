@@ -1,8 +1,12 @@
+from datetime import datetime, timedelta
+from typing import Sequence
+
 from aiogram.fsm.scene import Scene, on
 from aiogram.types import CallbackQuery, Message
-from aiohttp import ClientSession
 
+from app.assets.controllers.api import APIController
 from app.assets.controllers.session import SessionController
+from app.assets.models.class_entry import ClassEntry
 
 
 class HomeScene(Scene, state="home", reset_data_on_enter=True):
@@ -10,17 +14,15 @@ class HomeScene(Scene, state="home", reset_data_on_enter=True):
     async def on_message_enter(
             self,
             message: Message,
-            session_controller: SessionController,
+            api_controller: APIController,
     ) -> None:
-        session_id: str = await session_controller.get_session(message.from_user.id)
+        class_entries: Sequence[ClassEntry] = await api_controller.get_upcoming_schedule(message.from_user.id)
 
-        async with ClientSession() as session:
-            async with session.get(
-                    "https://wu.cdv.pl/?page=Main",
-                    cookies={"WU_PHPSESSID": session_id},
-                    ssl=SessionController.SSL_CONTEXT,
-            ) as response:
-                print(await response.text())
+        s = ""
+        for class_entry in class_entries:
+            s += f"{class_entry.title}\n{class_entry.room}\n\n"
+
+        await message.answer(s)
 
     @on.callback_query.enter()
     async def on_callback_query_enter(
@@ -28,12 +30,4 @@ class HomeScene(Scene, state="home", reset_data_on_enter=True):
             callback_query: CallbackQuery,
             session_controller: SessionController,
     ) -> None:
-        session_id: str = await session_controller.get_session(callback_query.from_user.id)
-
-        async with ClientSession() as session:
-            async with session.get(
-                    "https://wu.cdv.pl/?page=Main",
-                    cookies={"WU_PHPSESSID": session_id},
-                    ssl=SessionController.SSL_CONTEXT,
-            ) as response:
-                print(await response.text())
+        pass

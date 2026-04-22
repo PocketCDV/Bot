@@ -1,10 +1,14 @@
+from ssl import create_default_context
+
 from aiogram import Dispatcher
 from aiogram.fsm.scene import SceneRegistry
 from aiogram.fsm.storage.base import DefaultKeyBuilder
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.utils.i18n import I18n, ConstI18nMiddleware
+from certifi import where
 from redis.asyncio import Redis
 
+from app.assets.controllers.api import APIController
 from app.assets.controllers.message import MessageController
 from app.assets.controllers.session import SessionController
 from app.bot.routes.home import home_router
@@ -34,6 +38,10 @@ def create_dispatcher() -> Dispatcher:
         redis=redis,
         session_controller=SessionController(redis),
         message_controller=MessageController(redis),
+        api_controller=APIController(
+            "https://wu.cdv.pl",
+            ssl_context=create_default_context(cafile=where()),
+        ),
     )
 
     ConstI18nMiddleware(

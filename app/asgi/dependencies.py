@@ -1,5 +1,6 @@
 from starlette.requests import Request
 
+from app.assets.controllers.message import MessageController
 from app.assets.controllers.session import SessionController
 from config import Config
 
@@ -10,3 +11,7 @@ async def config_dependency(request: Request) -> Config:
 
 async def session_controller_dependency(request: Request) -> SessionController:
     return request.app.state.session_controller
+
+
+async def message_controller_dependency(request: Request) -> MessageController:
+    return request.app.state.message_controller

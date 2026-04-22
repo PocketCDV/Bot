@@ -11,6 +11,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from app.asgi.api.router import api_router
+from app.assets.controllers.message import MessageController
 from app.assets.controllers.session import SessionController
 from app.asgi.limiter import limiter
 from app.asgi.logging import logger
@@ -19,10 +20,11 @@ from config import config
 
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
-    redis = Redis.from_url(config.redis_dsn.get_secret_value())
+    redis = Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True)
 
     fastapi_app.state.config = config
     fastapi_app.state.session_controller = SessionController(redis)
+    fastapi_app.state.message_controller = MessageController(redis)
 
     yield
 

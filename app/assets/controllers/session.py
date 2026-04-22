@@ -63,7 +63,7 @@ class SessionController:
         try:
             async with ClientSession() as session:
                 session_id: str = await cls._fetch_session(session, login, password)
-                if session_id is None or not cls._verify_session_id(session, session_id):
+                if session_id is None or not await cls._verify_session_id(session, session_id):
                     raise HTTPException(
                         status_code=status.HTTP_401_UNAUTHORIZED,
                         detail="Invalid credentials",

@@ -5,7 +5,9 @@ from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.utils.i18n import I18n, ConstI18nMiddleware
 from redis.asyncio import Redis
 
+from app.assets.controllers.message import MessageController
 from app.assets.controllers.session import SessionController
+from app.bot.routes.home import home_router
 from app.bot.routes.start import start_router
 from app.bot.scenes.home import HomeScene
 from app.bot.scenes.start import StartScene
@@ -20,7 +22,7 @@ def create_dispatcher() -> Dispatcher:
     """
 
     i18n = I18n(path="locales", default_locale="en", domain="messages")
-    redis = Redis.from_url(config.redis_dsn.get_secret_value())
+    redis = Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True)
 
     new_dispatcher = Dispatcher(
         storage=RedisStorage(
@@ -31,6 +33,7 @@ def create_dispatcher() -> Dispatcher:
         i18n=i18n,
         redis=redis,
         session_controller=SessionController(redis),
+        message_controller=MessageController(redis),
     )
 
     ConstI18nMiddleware(
@@ -40,6 +43,7 @@ def create_dispatcher() -> Dispatcher:
 
     new_dispatcher.include_routers(
         start_router,
+        home_router,
     )
 
     SceneRegistry(new_dispatcher).add(

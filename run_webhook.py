@@ -11,7 +11,7 @@ from aiohttp import web
 from aiohttp.log import access_logger
 from aiohttp.web_app import Application
 
-from app.bot import create_dispatcher
+from app.bot.bot import create_dispatcher
 from config import config
 
 

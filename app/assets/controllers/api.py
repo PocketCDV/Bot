@@ -1,15 +1,14 @@
 from datetime import date, datetime, timezone, timedelta
+from http.cookies import Morsel
 from ssl import SSLContext
-from typing import Any, Dict, List, Tuple, Sequence
+from typing import Any, Dict, List, Sequence
 
-from aiohttp import ClientSession
+from aiohttp import ClientSession, ClientTimeout
 
 from app.assets.models.class_entry import ClassEntry
 
 
 class APIController:
-    TEMP_SESSION_ID: str = "e3f9c4eecdec113f9c3b60b73172c790"
-
     def __init__(
             self,
             base_url: str,
@@ -19,9 +18,45 @@ class APIController:
         self._base_url: str = base_url
         self._ssl_context: SSLContext | None = ssl_context
 
+    async def get_session_id(
+            self,
+            login: str,
+            password: str,
+    ) -> str | None:
+        async with ClientSession() as session:
+            async with session.post(
+                    f"{self._base_url}/?login=1",
+                    data={
+                        "login": login,
+                        "password": password,
+                        "redirectUrl": "https://wu.cdv.pl?page=Main",
+                    },
+                    allow_redirects=False,
+                    ssl=self._ssl_context,
+                    timeout=ClientTimeout(total=10),
+            ) as response:
+                phpsessid: Morsel | None = response.cookies.get("WU_PHPSESSID")
+
+        return phpsessid.value
+
+    async def verify_session_id(
+            self,
+            session_id: str,
+    ) -> bool:
+        async with ClientSession() as session:
+            async with session.get(
+                    f"{self._base_url}/ajax.php?action=get-translations",
+                    cookies={"WU_PHPSESSID": session_id},
+                    ssl=self._ssl_context,
+            ) as response:
+                try:
+                    return response.status == 200 and not int((await response.json())["error_code"])
+                except TypeError | ValueError:
+                    return False
+
     async def get_schedule(
             self,
-            telegram_id: int,
+            session_id: str,
             start_date: date,
             end_date: date,
     ) -> Sequence[ClassEntry]:
@@ -35,7 +70,7 @@ class APIController:
                     "poczatek": start_date.strftime("%Y-%m-%d"),
                     "koniec": end_date.strftime("%Y-%m-%d"),
                 },
-                cookies={"WU_PHPSESSID": self.TEMP_SESSION_ID},
+                cookies={"WU_PHPSESSID": session_id},
                 ssl=self._ssl_context,
             ) as response:
                 data: Dict[str, Any] = await response.json()
@@ -52,15 +87,15 @@ class APIController:
 
     async def get_upcoming_schedule(
             self,
-            telegram_id: int,
+            session_id: str,
             *,
-            next_days: int | None = None,
+            days: int | None = None,
     ) -> Sequence[ClassEntry]:
         start_date: date = datetime.now(timezone.utc).date()
-        end_date: date = start_date + timedelta(days=(next_days or 0) + 1)
+        end_date: date = start_date + timedelta(days=days or 0)
 
         return await self.get_schedule(
-            telegram_id,
+            session_id,
             start_date,
-            end_date
+            end_date,
         )

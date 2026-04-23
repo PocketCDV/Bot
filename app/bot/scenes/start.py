@@ -1,12 +1,18 @@
+import asyncio
+
+from aiogram import Bot
 from aiogram.fsm.scene import Scene, on
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, WebAppInfo
 from aiogram.utils.i18n import gettext as _
 
-from app.assets.controllers.message import MessageController
 from app.bot.actions.proceed import ProceedAction
+from app.bot.logging import logger
+from app.bot.middlewares.message_id import UserMessage
+from app.database.models import User
+from config import Config
 
 
-class StartScene(Scene, state="start", reset_data_on_enter=True, reset_history_on_enter=True):
+class StartScene(Scene, state="start"):
     """
     Base entry scene, introduction for new users and a home page for logged-in users.
     """
@@ -15,35 +21,51 @@ class StartScene(Scene, state="start", reset_data_on_enter=True, reset_history_o
     async def on_enter(
             self,
             message: Message,
-            message_controller: MessageController,
+            bot: Bot,
+            user: User,
+            user_message: UserMessage,
     ) -> None:
-        new_message: Message = await message.answer(
-            _("message.greeting_1").format(first_name=message.from_user.first_name),
-            reply_markup=InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(text=_("button.proceed"), callback_data=ProceedAction().pack())
-                    ]
-                ]
-            )
-        )
-        await message.delete()
+        if user is not None:
+            await self.wizard.goto("home")
+            return
 
-        await message_controller.set_message_id(message.from_user.id, new_message.message_id)
+        await asyncio.gather(
+            user_message.new_message(
+                _("message.greeting").format(first_name=message.from_user.first_name),
+                reply_markup=InlineKeyboardMarkup(
+                    inline_keyboard=[
+                        [
+                            InlineKeyboardButton(text=_("button.proceed"), callback_data=ProceedAction().pack())
+                        ]
+                    ]
+                ),
+            ),
+            bot.delete_message(
+                message.chat.id,
+                message.message_id,
+            ),
+            return_exceptions=True,
+        )
+
+        logger.info(
+            f"User {message.from_user.id} opened the greeting page."
+        )
 
     @on.callback_query(ProceedAction.filter())
     async def on_proceed(
             self,
             callback_query: CallbackQuery,
+            config: Config,
+            user_message: UserMessage,
     ) -> None:
-        await callback_query.message.edit_text(
-            _("message.greeting_2"),
+        await user_message.edit_message(
+            _("message.greeting.login"),
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[
                     [
                         InlineKeyboardButton(
-                            text=_("button.login_via_vc"),
-                            web_app=WebAppInfo(url="https://october-charlie-tea-big.trycloudflare.com"),
+                            text=_("button.login"),
+                            web_app=WebAppInfo(url=config.web_app_url),
                         )
                     ]
                 ]

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-21 16:41+0200\n"
+"POT-Creation-Date: 2026-04-23 05:21+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,19 +17,39 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app./scenes/start.py:19
-msgid "message.greeting_1"
+#: app./asgi/api/v1/auth/router.py:111
+msgid "message.login.success"
 msgstr ""
 
-#: app./scenes/start.py:23
+#: app./asgi/api/v1/auth/router.py:117
+msgid "button.go_home"
+msgstr ""
+
+#: app./bot/scenes/home.py:73
+msgid "message.schedule.class_entry.short"
+msgstr ""
+
+#: app./bot/scenes/home.py:82
+msgid "message.home"
+msgstr ""
+
+#: app./bot/scenes/login.py:58
+msgid "message.login"
+msgstr ""
+
+#: app./bot/scenes/login.py:63 app./bot/scenes/start.py:67
+msgid "button.login"
+msgstr ""
+
+#: app./bot/scenes/start.py:34
+msgid "message.greeting"
+msgstr ""
+
+#: app./bot/scenes/start.py:38
 msgid "button.proceed"
 msgstr ""
 
-#: app./scenes/start.py:36
-msgid "message.greeting_2"
-msgstr ""
-
-#: app./scenes/start.py:41
-msgid "button.login_via_vc"
+#: app./bot/scenes/start.py:62
+msgid "message.greeting.login"
 msgstr ""
 

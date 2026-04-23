@@ -11,6 +11,11 @@ class Config(BaseSettings):
 
     TITLE: ClassVar[str] = "PocketCDV"
 
+    database_dsn: SecretStr
+    """
+    DSN for database connection.
+    """
+
     telegram_bot_token: SecretStr
     """
     Telegram bot token.
@@ -29,6 +34,16 @@ class Config(BaseSettings):
     webhook_path: str | None = None
     """
     URL path by which telegram will send updates (Required only if webhook is used).
+    """
+
+    api_url: str
+    """
+    CDV API URL.
+    """
+
+    web_app_url: str
+    """
+    URL for Telegram login web app.
     """
 
     redis_dsn: SecretStr

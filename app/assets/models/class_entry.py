@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 class ClassEntry(BaseModel):
     title: str
-    module: str
+    module: str | None = None
     form: str
     start_time: datetime
     end_time: datetime
@@ -14,7 +14,7 @@ class ClassEntry(BaseModel):
     group_id: int
     room: int
     teachers: int
-    status: str
+    status: str | None = None
 
     @classmethod
     def from_data(
@@ -23,7 +23,7 @@ class ClassEntry(BaseModel):
     ) -> 'ClassEntry':
         return cls(
             title=data["title"],
-            module=data["module"],
+            module=data.get("module"),
             form=data["form"],
             start_time=data["start"],
             end_time=data["end"],
@@ -31,5 +31,5 @@ class ClassEntry(BaseModel):
             group_id=data["group_id"],
             room=data["room"],
             teachers=data["teachers"],
-            status=data["status"],
+            status=data.get("status"),
         )

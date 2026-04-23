@@ -1,4 +1,15 @@
 services:
+  # PostgreSQL Database.
+  bot_postgres:
+    container_name: bot_postgres
+    image: postgres:latest
+    restart: on-failure
+    env_file: ".postgres.env"
+    ports:
+      - "5433:5432"
+    volumes:
+      - "postgres-data:/var/lib/postgresql"
+
   # Redis database for operating games and caching data.
   bot_redis:
     container_name: bot_redis
@@ -12,4 +23,5 @@ services:
       - "./redis.conf:/usr/local/etc/redis/redis.conf"
 
 volumes:
+  postgres-data:
   redis-data:

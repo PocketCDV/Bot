@@ -1,21 +1,34 @@
 from ssl import create_default_context
 
-from aiogram import Dispatcher
+from aiogram import Dispatcher, BaseMiddleware
 from aiogram.fsm.scene import SceneRegistry
 from aiogram.fsm.storage.base import DefaultKeyBuilder
 from aiogram.fsm.storage.redis import RedisStorage
+from aiogram.fsm.strategy import FSMStrategy
 from aiogram.utils.i18n import I18n, ConstI18nMiddleware
 from certifi import where
 from redis.asyncio import Redis
 
 from app.assets.controllers.api import APIController
-from app.assets.controllers.message import MessageController
-from app.assets.controllers.session import SessionController
+from app.bot.middlewares.database import DatabaseMiddleware
+from app.bot.middlewares.message_id import MessageIdMiddleware
+from app.bot.middlewares.session_id import SessionIDMiddleware
+from app.bot.middlewares.user import UserMiddleware
 from app.bot.routes.home import home_router
 from app.bot.routes.start import start_router
 from app.bot.scenes.home import HomeScene
+from app.bot.scenes.login import LoginScene
 from app.bot.scenes.start import StartScene
+from app.database.database import Database
 from config import config
+
+
+def _register_middlewares(
+        dispatcher: Dispatcher,
+        *middlewares: BaseMiddleware,
+) -> None:
+    for middleware in middlewares:
+        dispatcher.update.outer_middleware.register(middleware)
 
 
 def create_dispatcher() -> Dispatcher:
@@ -26,37 +39,41 @@ def create_dispatcher() -> Dispatcher:
     """
 
     i18n = I18n(path="locales", default_locale="en", domain="messages")
+    database = Database.from_dsn(config.database_dsn.get_secret_value())
     redis = Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True)
+    api_controller = APIController(config.api_url, ssl_context=create_default_context(cafile=where()))
 
-    new_dispatcher = Dispatcher(
+    dispatcher = Dispatcher(
         storage=RedisStorage(
             redis,
             key_builder=DefaultKeyBuilder(with_destiny=True),
         ),
+        fsm_strategy=FSMStrategy.GLOBAL_USER,
         config=config,
         i18n=i18n,
         redis=redis,
-        session_controller=SessionController(redis),
-        message_controller=MessageController(redis),
-        api_controller=APIController(
-            "https://wu.cdv.pl",
-            ssl_context=create_default_context(cafile=where()),
-        ),
+        api_controller=api_controller,
     )
 
-    ConstI18nMiddleware(
-        locale="en",
-        i18n=i18n,
-    ).setup(new_dispatcher)
+    _register_middlewares(
+        dispatcher,
+        DatabaseMiddleware(database=database),
+        UserMiddleware(),
+        SessionIDMiddleware(api_controller=api_controller),
+        MessageIdMiddleware(),
+    )
 
-    new_dispatcher.include_routers(
+    ConstI18nMiddleware(locale="en", i18n=i18n).setup(dispatcher)
+
+    dispatcher.include_routers(
         start_router,
         home_router,
     )
 
-    SceneRegistry(new_dispatcher).add(
+    SceneRegistry(dispatcher).add(
         StartScene,
         HomeScene,
+        LoginScene,
     )
 
-    return new_dispatcher
+    return dispatcher

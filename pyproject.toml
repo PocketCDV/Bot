@@ -24,6 +24,7 @@ dependencies = [
     "slowapi (>=0.1.9,<0.2.0)",
     "beautifulsoup4 (>=4.14.3,<5.0.0)",
     "lxml (>=6.1.0,<7.0.0)",
+    "uuid7 (>=0.1.0,<0.2.0)",
 ]
 package-mode = false
 

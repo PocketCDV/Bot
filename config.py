@@ -16,6 +16,21 @@ class Config(BaseSettings):
     DSN for database connection.
     """
 
+    redis_dsn: SecretStr
+    """
+    DSN for Redis connection.
+    """
+
+    rabbitmq_dsn: SecretStr
+    """
+    DSN for RabbitMQ connection.
+    """
+
+    result_backend_dsn: str = "rpc://"
+    """
+    DSN for retrieving task results.
+    """
+
     telegram_bot_token: SecretStr
     """
     Telegram bot token.
@@ -44,11 +59,6 @@ class Config(BaseSettings):
     web_app_url: str
     """
     URL for Telegram login web app.
-    """
-
-    redis_dsn: SecretStr
-    """
-    DSN for Redis connection.
     """
 
     log_level: int = 40

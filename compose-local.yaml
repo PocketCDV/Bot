@@ -22,6 +22,19 @@ services:
       - "redis-data:/data"
       - "./redis.conf:/usr/local/etc/redis/redis.conf"
 
+  # Broker for managing celery tasks.
+  bot_rabbitmq:
+    container_name: bot_rabbitmq
+    image: rabbitmq:3-management
+    restart: on-failure
+    env_file: ".rabbitmq.env"
+    ports:
+      - "5672:5672"
+      - "5673:15672"
+    volumes:
+      - "rabbitmq-data:/data"
+
 volumes:
   postgres-data:
   redis-data:
+  rabbitmq-data:

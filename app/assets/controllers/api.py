@@ -25,34 +25,36 @@ class APIController:
     ) -> str | None:
         async with ClientSession() as session:
             async with session.post(
-                    f"{self._base_url}/?login=1",
-                    data={
-                        "login": login,
-                        "password": password,
-                        "redirectUrl": "https://wu.cdv.pl?page=Main",
-                    },
-                    allow_redirects=False,
-                    ssl=self._ssl_context,
-                    timeout=ClientTimeout(total=10),
+                f"{self._base_url}/?login=1",
+                data={
+                    "login": login,
+                    "password": password,
+                    "redirectUrl": "https://wu.cdv.pl?page=Main",
+                },
+                allow_redirects=False,
+                ssl=self._ssl_context,
+                timeout=ClientTimeout(total=10),
             ) as response:
-                phpsessid: Morsel | None = response.cookies.get("WU_PHPSESSID")
+                return response.cookies.get("WU_PHPSESSID").value
 
-        return phpsessid.value
-
-    async def verify_session_id(
+    async def refresh_session_id(
             self,
             session_id: str,
-    ) -> bool:
+    ) -> str | None:
         async with ClientSession() as session:
             async with session.get(
-                    f"{self._base_url}/ajax.php?action=get-translations",
-                    cookies={"WU_PHPSESSID": session_id},
-                    ssl=self._ssl_context,
+                f"{self._base_url}/ajax.php",
+                params={"action": "get-translations"},
+                cookies={"WU_PHPSESSID": session_id},
+                ssl=self._ssl_context,
             ) as response:
                 try:
-                    return response.status == 200 and not int((await response.json())["error_code"])
+                    if response.status == 200 and not int((await response.json())["error_code"]):
+                        return response.cookies.get("WU_PHPSESSID").value
+                    else:
+                        return None
                 except TypeError | ValueError:
-                    return False
+                    return None
 
     async def get_schedule(
             self,

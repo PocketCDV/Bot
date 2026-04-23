@@ -55,7 +55,7 @@ async def login(
     try:
         session_id: str = await api_controller.get_session_id(login_model.login, login_model.password)
 
-        if session_id is None or not await api_controller.verify_session_id(session_id):
+        if session_id is None or (await api_controller.refresh_session_id(session_id)) is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid credentials",

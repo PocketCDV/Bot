@@ -29,7 +29,7 @@ class SessionIDMiddleware(BaseMiddleware):
         state: FSMContext = data.get("state")
         session_id: str | None = await state.get_value("session_id")
 
-        if session_id is None or not await self._api_controller.verify_session_id(session_id):
+        if session_id is None or (await self._api_controller.refresh_session_id(session_id)) is None:
             await state.update_data(session_id=None)
             data["session_id"] = None
         else:

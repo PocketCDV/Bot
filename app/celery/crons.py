@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import sys
 from ssl import create_default_context
 
@@ -47,10 +48,13 @@ async def __async_session_refresh() -> None:
                 )
             )
 
-            result: bool = await api_controller.verify_session_id(await state.get_value("session_id"))
+            session_id: str = await state.get_value("session_id")
 
-            if not result:
-                await state.update_data(session_id=None)
+            if session_id is None:
+                continue
+
+            new_session_id: str = await api_controller.refresh_session_id(session_id)
+            await state.update_data(session_id=new_session_id)
 
             await asyncio.sleep(0.1)
 
@@ -67,4 +71,3 @@ def session_refresh() -> None:
         loop.run_until_complete(__async_session_refresh())
     else:
         asyncio.run(__async_session_refresh())
-

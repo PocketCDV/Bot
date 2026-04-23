@@ -76,11 +76,21 @@ class HomeScene(Scene, state="home"):
         class_entries: Sequence[ClassEntry] = await api_controller.get_upcoming_schedule(session_id)
 
         room_ids: Tuple[int] = tuple(dict.fromkeys(class_entry.room for class_entry in class_entries))
-        result = await database_session.scalars(
-            select(Room.name)
-            .filter(Room.id.in_(room_ids))
-        )
-        room_names: Dict[int, str] = dict(zip(room_ids, result.all()))
+
+        found_room_names: Dict[int, str] = {
+            row.id: row.name
+            for row in (
+                await database_session.execute(
+                    select(Room.id, Room.name)
+                    .filter(Room.id.in_(room_ids))
+                )
+            ).all()
+        }
+
+        room_names: Dict[int, str] = {
+            room_id: found_room_names.get(room_id, "Unknown room")
+            for room_id in room_ids
+        }
 
         class_entries_strings: List[str] = []
         for class_entry in class_entries:

@@ -1,6 +1,4 @@
-from typing import Any, Dict
-
-from aiogram.types import User as AiogramUser, TelegramObject
+from aiogram.types import User as AiogramUser
 from aiogram_i18n.managers import BaseManager
 from sqlalchemy import update
 
@@ -42,3 +40,4 @@ class LocaleManager(BaseManager):
                 .filter_by(telegram_id=event_from_user.id)
                 .values(locale=locale)
             )
+            await database_session.commit()

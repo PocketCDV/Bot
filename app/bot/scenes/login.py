@@ -16,11 +16,19 @@ class LoginScene(BaseScene, state="login"):
             user_message: UserMessage,
             i18n: I18nContext,
     ) -> None:
-        await self._open_login_page(
-            config=config,
-            user_message=user_message,
-            i18n=i18n,
-            delete_message_id=message.message_id,
+        await user_message.new_message(
+            i18n.get("login"),
+            reply_markup=InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [
+                        InlineKeyboardButton(
+                            text=i18n.get("button-login"),
+                            web_app=WebAppInfo(url=config.web_app_url),
+                        )
+                    ]
+                ]
+            ),
+            message_to_delete=message.message_id,
         )
 
     @on.callback_query.enter()
@@ -30,27 +38,6 @@ class LoginScene(BaseScene, state="login"):
             config: Config,
             user_message: UserMessage,
             i18n: I18nContext,
-    ) -> None:
-        await self._open_login_page(
-            config=config,
-            user_message=user_message,
-            i18n=i18n,
-        )
-        await callback_query.answer()
-
-    @on.message()
-    async def on_message(
-            self,
-            message: Message,
-    ) -> None:
-        await message.delete()
-
-    @staticmethod
-    async def _open_login_page(
-            config: Config,
-            user_message: UserMessage,
-            i18n: I18nContext,
-            delete_message_id: int | None = None,
     ) -> None:
         await user_message.edit_message(
             i18n.get("login"),
@@ -64,5 +51,12 @@ class LoginScene(BaseScene, state="login"):
                     ]
                 ]
             ),
-            message_to_delete=delete_message_id,
         )
+        await callback_query.answer()
+
+    @on.message()
+    async def on_message(
+            self,
+            message: Message,
+    ) -> None:
+        await message.delete()

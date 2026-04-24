@@ -32,7 +32,13 @@ class HomeScene(BaseScene, state="home"):
                         text=i18n.get("button-view-schedule"),
                         callback_data=SwitchSceneAction(scene="schedule").pack(),
                     )
-                ]
+                ],
+                [
+                    InlineKeyboardButton(
+                        text=i18n.get("button-lang"),
+                        callback_data=SwitchSceneAction(scene="language").pack(),
+                    )
+                ],
             ]
         )
 
@@ -78,7 +84,13 @@ class HomeScene(BaseScene, state="home"):
                         text=i18n.get("button-view-schedule"),
                         callback_data=SwitchSceneAction(scene="schedule").pack(),
                     )
-                ]
+                ],
+                [
+                    InlineKeyboardButton(
+                        text=i18n.get("button-lang"),
+                        callback_data=SwitchSceneAction(scene="language").pack(),
+                    )
+                ],
             ]
         )
 

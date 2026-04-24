@@ -1,17 +1,10 @@
 import asyncio
 from typing import Annotated
 
-from aiogram import Bot
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.storage.base import DefaultKeyBuilder, StorageKey
-from aiogram.fsm.storage.redis import RedisStorage
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.utils.i18n import I18n
 from aiogram.utils.web_app import safe_parse_webapp_init_data, WebAppInitData
 from aiohttp import ClientConnectionError, ClientConnectorCertificateError
 from fastapi import APIRouter, Depends, HTTPException
 from redis.asyncio import Redis
-from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.requests import Request
@@ -21,8 +14,7 @@ from app.asgi.dependencies import config_dependency, redis_dependency, api_contr
     database_session_dependency
 from app.asgi.limiter import limiter
 from app.assets.controllers.api import APIController
-from app.bot.actions.home import HomeAction
-from app.database.models import User
+from app.celery.tasks import insert_user_to_database, set_successful_login_message, update_state
 from config import Config
 
 auth_router: APIRouter = APIRouter(prefix="/auth", tags=["Auth"])
@@ -78,44 +70,21 @@ async def login(
             detail="Timed out",
         )
 
-    # TODO: Celery tasks for everything below
-
-    await database_session.execute(
-        insert(User).values(
-            telegram_id=telegram_init_data.user.id,
-            first_name=telegram_init_data.user.first_name,
-            locale="en"
-        ).on_conflict_do_nothing(index_elements=["telegram_id"])
-    )
-    await database_session.commit()
-
-    bot: Bot = Bot(token=config.telegram_bot_token.get_secret_value())
-
-    state: FSMContext = FSMContext(
-        storage=RedisStorage(
-            redis,
-            key_builder=DefaultKeyBuilder(with_destiny=True),
-        ),
-        key=StorageKey(
-            bot_id=bot.id,
-            chat_id=telegram_init_data.user.id,
-            user_id=telegram_init_data.user.id,
-        )
+    await asyncio.to_thread(
+        insert_user_to_database.delay,
+        telegram_id=telegram_init_data.user.id,
+        first_name=telegram_init_data.user.first_name,
+        locale=telegram_init_data.user.language_code,
     )
 
-    await state.update_data(session_id=session_id)
+    await asyncio.to_thread(
+        update_state.delay,
+        telegram_id=telegram_init_data.user.id,
+        data={"session_id": session_id},
+    )
 
-    i18n = I18n(path="locales")
-
-    await bot.edit_message_text(
-        i18n.gettext("message.login.success"),
-        chat_id=telegram_init_data.user.id,
-        message_id=await state.get_value("message_id"),
-        reply_markup=InlineKeyboardMarkup(
-            inline_keyboard=[
-                [
-                    InlineKeyboardButton(text=i18n.gettext("button.go_home"), callback_data=HomeAction().pack())
-                ]
-            ]
-        )
+    await asyncio.to_thread(
+        set_successful_login_message.delay,
+        telegram_id=telegram_init_data.user.id,
+        locale=telegram_init_data.user.language_code,
     )

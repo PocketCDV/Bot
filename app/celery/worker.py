@@ -36,4 +36,4 @@ def create_worker() -> Celery:
 
 
 # Main Celery worker
-worker = create_worker()
+worker: Celery = create_worker()

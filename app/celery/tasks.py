@@ -1,6 +1,5 @@
 import asyncio
 import sys
-from typing import Any, Dict
 
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
@@ -54,47 +53,6 @@ async def __async_set_successful_login_message(
             ]
         )
     )
-
-
-@worker.task(
-    name="insert_user_to_database",
-    max_retries=3,
-    default_retry_delay=5,
-    ignore_result=True,
-    time_limit=30,
-    soft_time_limit=25,
-)
-def insert_user_to_database(
-        telegram_id: int,
-        first_name: str,
-        locale: str,
-) -> None:
-    if sys.platform == "win32":
-        loop = asyncio.SelectorEventLoop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(__async_insert_user_to_database(telegram_id, first_name, locale))
-    else:
-        asyncio.run(__async_insert_user_to_database(telegram_id, first_name, locale))
-
-
-@worker.task(
-    name="update_state",
-    max_retries=3,
-    default_retry_delay=5,
-    ignore_result=True,
-    time_limit=30,
-    soft_time_limit=25,
-)
-def update_state(
-        telegram_id: int,
-        data: Dict[str, Any],
-) -> None:
-    if sys.platform == "win32":
-        loop = asyncio.SelectorEventLoop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(__async_update_state(telegram_id, data))
-    else:
-        asyncio.run(__async_update_state(telegram_id, data))
 
 
 @worker.task(

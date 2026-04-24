@@ -1,7 +1,6 @@
-from aiogram import Bot
 from aiogram.fsm.scene import on
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo, CallbackQuery
-from aiogram.utils.i18n import gettext as _
+from aiogram_i18n import I18nContext
 
 from app.bot.middlewares.message_id import UserMessage
 from app.bot.scenes.base import BaseScene
@@ -13,14 +12,14 @@ class LoginScene(BaseScene, state="login"):
     async def on_message_enter(
             self,
             message: Message,
-            bot: Bot,
             config: Config,
             user_message: UserMessage,
+            i18n: I18nContext,
     ) -> None:
         await self._open_login_page(
-            bot=bot,
             config=config,
             user_message=user_message,
+            i18n=i18n,
             delete_message_id=message.message_id,
         )
 
@@ -28,15 +27,16 @@ class LoginScene(BaseScene, state="login"):
     async def on_callback_query_enter(
             self,
             callback_query: CallbackQuery,
-            bot: Bot,
             config: Config,
             user_message: UserMessage,
+            i18n: I18nContext,
     ) -> None:
         await self._open_login_page(
-            bot=bot,
             config=config,
             user_message=user_message,
+            i18n=i18n,
         )
+        await callback_query.answer()
 
     @on.message()
     async def on_message(
@@ -47,18 +47,18 @@ class LoginScene(BaseScene, state="login"):
 
     @staticmethod
     async def _open_login_page(
-            bot: Bot,
             config: Config,
             user_message: UserMessage,
+            i18n: I18nContext,
             delete_message_id: int | None = None,
     ) -> None:
         await user_message.edit_message(
-            _("message.login"),
+            i18n.get("login"),
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[
                     [
                         InlineKeyboardButton(
-                            text=_("button.login"),
+                            text=i18n.get("button-login"),
                             web_app=WebAppInfo(url=config.web_app_url),
                         )
                     ]

@@ -1,6 +1,6 @@
 from aiogram.fsm.scene import on
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.utils.i18n import gettext as _, I18n
+from aiogram_i18n import I18nContext
 
 from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_day_record import ScheduleDayRecord
@@ -16,7 +16,7 @@ class HomeScene(BaseScene, state="home"):
             message: Message,
             user_message: UserMessage,
             session_id: str,
-            i18n: I18n,
+            i18n: I18nContext,
             schedule_controller: ScheduleController,
     ) -> None:
         if session_id is None:
@@ -29,7 +29,7 @@ class HomeScene(BaseScene, state="home"):
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=_("button.view_schedule"),
+                        text=i18n.get("button-view-schedule"),
                         callback_data=SwitchSceneAction(scene="schedule").pack(),
                     )
                 ]
@@ -38,7 +38,8 @@ class HomeScene(BaseScene, state="home"):
 
         if schedule.class_records:
             await user_message.new_message(
-                _("message.home").format(
+                i18n.get(
+                    "home",
                     first_name=message.from_user.first_name,
                     classes=schedule.to_string(i18n),
                 ),
@@ -47,8 +48,10 @@ class HomeScene(BaseScene, state="home"):
             )
         else:
             await user_message.new_message(
-                _("message.home.no_classes").format(
+                i18n.get(
+                    "home",
                     first_name=message.from_user.first_name,
+                    classes=schedule.to_string(i18n),
                 ),
                 reply_markup=reply_markup,
                 message_to_delete=message.message_id,
@@ -60,7 +63,7 @@ class HomeScene(BaseScene, state="home"):
             callback_query: CallbackQuery,
             user_message: UserMessage,
             session_id: str,
-            i18n: I18n,
+            i18n: I18nContext,
             schedule_controller: ScheduleController,
     ) -> None:
         if session_id is None:
@@ -73,29 +76,31 @@ class HomeScene(BaseScene, state="home"):
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=_("button.view_schedule"),
+                        text=i18n.get("button-view-schedule"),
                         callback_data=SwitchSceneAction(scene="schedule").pack(),
                     )
                 ]
             ]
         )
 
-        if not schedule.class_records:
+        if schedule.class_records:
             await user_message.new_message(
-                _("message.home.no_classes").format(
+                i18n.get(
+                    "home",
                     first_name=callback_query.from_user.first_name,
+                    classes=schedule.to_string(i18n),
                 ),
                 reply_markup=reply_markup,
             )
-            return
-
-        await user_message.new_message(
-            _("message.home").format(
-                first_name=callback_query.from_user.first_name,
-                classes=schedule.to_string(i18n),
-            ),
-            reply_markup=reply_markup,
-        )
+        else:
+            await user_message.new_message(
+                i18n.get(
+                    "home",
+                    first_name=callback_query.from_user.first_name,
+                    classes=schedule.to_string(i18n),
+                ),
+                reply_markup=reply_markup,
+            )
 
         await callback_query.answer()
 

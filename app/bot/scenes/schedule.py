@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.fsm.scene import on
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.i18n import gettext as _, I18n
+from aiogram_i18n import I18nContext
 
 from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_record import ScheduleRecord
@@ -22,7 +23,7 @@ class ScheduleScene(BaseScene, state="schedule"):
             state: FSMContext,
             user_message: UserMessage,
             session_id: str,
-            i18n: I18n,
+            i18n: I18nContext,
             schedule_controller: ScheduleController,
             initial_date: date | None = None,
     ) -> None:
@@ -39,17 +40,17 @@ class ScheduleScene(BaseScene, state="schedule"):
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=_("button.flip_page.backwards"),
+                        text=i18n.get("button-flip-page.backwards"),
                         callback_data=FlipPageAction.backwards().pack(),
                     ),
                     InlineKeyboardButton(
-                        text=_("button.flip_page.forwards"),
+                        text=i18n.get("button-flip-page.forwards"),
                         callback_data=FlipPageAction.forwards().pack(),
                     ),
                 ],
                 [
                     InlineKeyboardButton(
-                        text=_("button.back"),
+                        text=i18n.get("button-back"),
                         callback_data=BackAction().pack(),
                     )
                 ]
@@ -58,7 +59,8 @@ class ScheduleScene(BaseScene, state="schedule"):
 
         if schedule_date in schedule.schedule:
             await user_message.edit_message(
-                _("message.schedule").format(
+                i18n.get(
+                    "schedule",
                     schedule_date=schedule_date.strftime("%d.%m.%Y"),
                     schedule=schedule.to_string(schedule_date, i18n),
                 ),
@@ -66,8 +68,10 @@ class ScheduleScene(BaseScene, state="schedule"):
             )
         else:
             await user_message.edit_message(
-                _("message.schedule.no_classes").format(
+                i18n.get(
+                    "schedule",
                     schedule_date=schedule_date.strftime("%d.%m.%Y"),
+                    schedule=schedule.to_string(schedule_date, i18n),
                 ),
                 reply_markup=reply_markup,
             )
@@ -89,7 +93,7 @@ class ScheduleScene(BaseScene, state="schedule"):
             state: FSMContext,
             user_message: UserMessage,
             session_id: str,
-            i18n: I18n,
+            i18n: I18nContext,
             schedule_controller: ScheduleController,
     ) -> None:
         data: Dict[str, Any] = await state.get_data()
@@ -118,17 +122,17 @@ class ScheduleScene(BaseScene, state="schedule"):
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=_("button.flip_page.backwards"),
+                        text=i18n.get("button-flip-page.backwards"),
                         callback_data=FlipPageAction.backwards().pack(),
                     ),
                     InlineKeyboardButton(
-                        text=_("button.flip_page.forwards"),
+                        text=i18n.get("button-flip-page.forwards"),
                         callback_data=FlipPageAction.forwards().pack(),
                     ),
                 ],
                 [
                     InlineKeyboardButton(
-                        text=_("button.back"),
+                        text=i18n.get("button-back"),
                         callback_data=BackAction().pack(),
                     )
                 ]
@@ -137,7 +141,8 @@ class ScheduleScene(BaseScene, state="schedule"):
 
         if schedule_date in schedule.schedule:
             await user_message.edit_message(
-                _("message.schedule").format(
+                i18n.get(
+                    "schedule",
                     schedule_date=schedule_date.strftime("%d.%m.%Y"),
                     schedule=schedule.to_string(schedule_date, i18n),
                 ),
@@ -145,8 +150,10 @@ class ScheduleScene(BaseScene, state="schedule"):
             )
         else:
             await user_message.edit_message(
-                _("message.schedule.no_classes").format(
+                i18n.get(
+                    "schedule",
                     schedule_date=schedule_date.strftime("%d.%m.%Y"),
+                    schedule=schedule.to_string(schedule_date, i18n),
                 ),
                 reply_markup=reply_markup,
             )

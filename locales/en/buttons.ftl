@@ -1,13 +1,13 @@
-back = Back
+button-back = Back
 
-flip-page =
+button-flip-page =
     .forwards = >>
     .backwards = <<
 
-go-home = Go to the Home Page
+button-go-home = Go to the Home Page
 
-login = Log in
+button-login = Log in
 
-proceed = Proceed
+button-proceed = Proceed
 
-view-schedule = View schedule
+button-view-schedule = View schedule

@@ -1,6 +1,7 @@
 from typing import List, Any, Dict
 
 from aiogram.utils.i18n import I18n
+from aiogram_i18n import I18nContext
 from pydantic import BaseModel, Field
 
 from app.assets.models.class_record import ClassRecord
@@ -25,7 +26,7 @@ class ScheduleDayRecord(BaseModel):
 
     def to_string(
             self,
-            i18n: I18n,
+            i18n: I18nContext,
     ) -> str:
         return "\n\n".join(
             [record.to_string(i18n) for record in self.class_records]

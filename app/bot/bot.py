@@ -6,7 +6,7 @@ from aiogram.fsm.storage.base import DefaultKeyBuilder
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.strategy import FSMStrategy
 from aiogram_i18n import I18nMiddleware
-from aiogram_i18n.cores import FluentRuntimeCore
+from aiogram_i18n.cores import FluentCompileCore
 from certifi import where
 from redis.asyncio import Redis
 
@@ -71,7 +71,7 @@ def create_dispatcher() -> Dispatcher:
     )
 
     I18nMiddleware(
-        core=FluentRuntimeCore(
+        core=FluentCompileCore(
             path="locales/{locale}",
             default_locale="en",
         ),

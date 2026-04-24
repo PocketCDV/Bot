@@ -36,7 +36,7 @@ class ClassRecord(BaseModel):
             i18n: I18nContext,
     ) -> str:
         return i18n.get(
-            "schedule-class-entry",
+            "schedule-class-entry.short",
             title=self.title,
             start_time=self.start_time.strftime("%H:%M"),
             end_time=self.end_time.strftime("%H:%M"),

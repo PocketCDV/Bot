@@ -33,5 +33,7 @@ class ScheduleRecord(BaseModel):
     ) -> str | None:
         schedule_day: ScheduleDayRecord | None = self.schedule.get(schedule_date)
 
-        if schedule_day is not None:
-            return schedule_day.to_string(i18n)
+        if schedule_day is None:
+            return ""
+
+        return schedule_day.to_string(i18n)

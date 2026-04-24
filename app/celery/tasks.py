@@ -5,7 +5,7 @@ from typing import Any, Dict
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram_i18n.cores import FluentRuntimeCore
+from aiogram_i18n.cores import FluentCompileCore
 from redis.asyncio import Redis
 from sqlalchemy.dialects.postgresql import insert
 
@@ -54,7 +54,7 @@ async def __async_set_successful_login_message(
 ) -> None:
     bot: Bot = Bot(token=config.telegram_bot_token.get_secret_value())
 
-    core = FluentRuntimeCore(path="locales/{locale}")
+    core = FluentCompileCore(path="locales/{locale}")
     await core.startup()
 
     state: FSMContext = get_state(

@@ -41,7 +41,7 @@ class StartScene(BaseScene, state="start"):
                     inline_keyboard=[
                         [
                             InlineKeyboardButton(
-                                text=i18n.get("proceed"),
+                                text=i18n.get("button-proceed"),
                                 callback_data=ProceedAction().pack(),
                             )
                         ]
@@ -75,7 +75,7 @@ class StartScene(BaseScene, state="start"):
                 inline_keyboard=[
                     [
                         InlineKeyboardButton(
-                            text=i18n.get("login"),
+                            text=i18n.get("button-login"),
                             web_app=WebAppInfo(url=config.web_app_url),
                         )
                     ]

@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from aiogram.types import User as AiogramUser
+from aiogram.types import User as AiogramUser, TelegramObject
 from aiogram_i18n.managers import BaseManager
 from sqlalchemy import update
 
@@ -18,31 +18,27 @@ class LocaleManager(BaseManager):
 
     async def get_locale(
             self,
-            data: Dict[str, Any],
+            *,
+            event_from_user: AiogramUser | None,
+            user: User | None,
     ) -> str | None:
-        user: User | None = data.get("user")
-
         if user is None:
-            from_user: AiogramUser | None = data.get("event_from_user")
-            return self.default_locale if from_user is None else from_user.language_code
+            return self.default_locale if event_from_user is None else event_from_user.language_code
 
         return user.locale
 
     async def set_locale(
             self,
             locale: str,
-            data: Dict[str, Any],
+            event_from_user: AiogramUser | None,
+            database: Database,
     ) -> None:
-        from_user: AiogramUser | None = data.get("event_from_user")
-
-        if from_user is None:
+        if event_from_user is None:
             return
-
-        database: Database = data.get("database")
 
         async with database.session_maker() as database_session:
             await database_session.execute(
                 update(User)
-                .filter_by(telegram_id=from_user.id)
+                .filter_by(telegram_id=event_from_user.id)
                 .values(locale=locale)
             )

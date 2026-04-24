@@ -10,6 +10,7 @@ from certifi import where
 from redis.asyncio import Redis
 
 from app.assets.controllers.api import APIController
+from app.assets.controllers.schedule import ScheduleController
 from app.bot.middlewares.database import DatabaseMiddleware
 from app.bot.middlewares.message_id import MessageIdMiddleware
 from app.bot.middlewares.session_id import SessionIDMiddleware
@@ -18,6 +19,7 @@ from app.bot.routes.home import home_router
 from app.bot.routes.start import start_router
 from app.bot.scenes.home import HomeScene
 from app.bot.scenes.login import LoginScene
+from app.bot.scenes.schedule import ScheduleScene
 from app.bot.scenes.start import StartScene
 from app.database.database import Database
 from config import config
@@ -53,6 +55,10 @@ def create_dispatcher() -> Dispatcher:
         i18n=i18n,
         redis=redis,
         api_controller=api_controller,
+        schedule_controller=ScheduleController(
+            database,
+            api_controller
+        ),
     )
 
     _register_middlewares(
@@ -74,6 +80,7 @@ def create_dispatcher() -> Dispatcher:
         StartScene,
         HomeScene,
         LoginScene,
+        ScheduleScene,
     )
 
     return dispatcher

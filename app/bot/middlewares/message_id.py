@@ -1,8 +1,8 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Callable, Any, Awaitable, Set, Dict
+from typing import Callable, Any, Awaitable, Dict, Coroutine, List
 
-from aiogram import BaseMiddleware, Router, Bot
+from aiogram import BaseMiddleware, Bot
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import TelegramObject, User, InlineKeyboardMarkup, Message
@@ -20,8 +20,9 @@ class UserMessage:
             text: str,
             *,
             reply_markup: InlineKeyboardMarkup | None = None,
+            message_to_delete: int | None = None,
     ) -> None:
-        new_message, _ = await asyncio.gather(
+        coroutines: List[Coroutine] = [
             self._bot.send_message(
                 chat_id=self.user_id,
                 text=text,
@@ -31,8 +32,20 @@ class UserMessage:
                 self.user_id,
                 self.message_id
             ),
-            return_exceptions=True,
-        )
+        ]
+
+        if message_to_delete is not None:
+            coroutines.append(
+                self._bot.delete_message(
+                    self.user_id,
+                    message_to_delete
+                )
+            )
+
+        new_message, *_ = await asyncio.gather(*coroutines, return_exceptions=True)
+
+        if not isinstance(new_message, Message):
+            return
 
         self.message_id = new_message.message_id
 
@@ -41,6 +54,7 @@ class UserMessage:
             text: str,
             *,
             reply_markup: InlineKeyboardMarkup | None = None,
+            message_to_delete: int | None = None,
     ) -> None:
         try:
             if self.message_id is None:
@@ -52,10 +66,14 @@ class UserMessage:
                 text=text,
                 reply_markup=reply_markup,
             )
-        except (TelegramBadRequest, ValueError):
+        except (TelegramBadRequest, ValueError) as error:
+            if isinstance(error, TelegramBadRequest) and "message is not modified" in error.message:
+                return
+
             await self.new_message(
                 text,
                 reply_markup=reply_markup,
+                message_to_delete=message_to_delete,
             )
 
 

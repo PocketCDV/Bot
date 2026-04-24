@@ -1,18 +1,19 @@
 import asyncio
 
 from aiogram import Bot
-from aiogram.fsm.scene import Scene, on
+from aiogram.fsm.scene import on
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, WebAppInfo
 from aiogram.utils.i18n import gettext as _
 
 from app.bot.actions.proceed import ProceedAction
 from app.bot.logging import logger
 from app.bot.middlewares.message_id import UserMessage
+from app.bot.scenes.base import BaseScene
 from app.database.models import User
 from config import Config
 
 
-class StartScene(Scene, state="start"):
+class StartScene(BaseScene, state="start"):
     """
     Base entry scene, introduction for new users and a home page for logged-in users.
     """

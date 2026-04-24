@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-23 05:21+0200\n"
+"POT-Creation-Date: 2026-04-24 07:18+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,31 +25,59 @@ msgstr ""
 msgid "button.go_home"
 msgstr ""
 
-#: app./bot/scenes/home.py:73
+#: app./assets/models/class_record.py:39
 msgid "message.schedule.class_entry.short"
 msgstr ""
 
-#: app./bot/scenes/home.py:82
+#: app./bot/scenes/home.py:32 app./bot/scenes/home.py:76
+msgid "button.view_schedule"
+msgstr ""
+
+#: app./bot/scenes/home.py:41 app./bot/scenes/home.py:93
 msgid "message.home"
 msgstr ""
 
-#: app./bot/scenes/login.py:58
+#: app./bot/scenes/home.py:50 app./bot/scenes/home.py:85
+msgid "message.home.no_classes"
+msgstr ""
+
+#: app./bot/scenes/login.py:56
 msgid "message.login"
 msgstr ""
 
-#: app./bot/scenes/login.py:63 app./bot/scenes/start.py:67
+#: app./bot/scenes/login.py:61 app./bot/scenes/start.py:68
 msgid "button.login"
 msgstr ""
 
-#: app./bot/scenes/start.py:34
+#: app./bot/scenes/schedule.py:42 app./bot/scenes/schedule.py:115
+msgid "button.flip_page.backwards"
+msgstr ""
+
+#: app./bot/scenes/schedule.py:46 app./bot/scenes/schedule.py:119
+msgid "button.flip_page.forwards"
+msgstr ""
+
+#: app./bot/scenes/schedule.py:52 app./bot/scenes/schedule.py:125
+msgid "button.back"
+msgstr ""
+
+#: app./bot/scenes/schedule.py:61 app./bot/scenes/schedule.py:134
+msgid "message.schedule"
+msgstr ""
+
+#: app./bot/scenes/schedule.py:69 app./bot/scenes/schedule.py:142
+msgid "message.schedule.no_classes"
+msgstr ""
+
+#: app./bot/scenes/start.py:35
 msgid "message.greeting"
 msgstr ""
 
-#: app./bot/scenes/start.py:38
+#: app./bot/scenes/start.py:39
 msgid "button.proceed"
 msgstr ""
 
-#: app./bot/scenes/start.py:62
+#: app./bot/scenes/start.py:63
 msgid "message.greeting.login"
 msgstr ""
 

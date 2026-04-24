@@ -33,3 +33,13 @@ class ClassEntry(BaseModel):
             teachers=data["teachers"],
             status=data.get("status"),
         )
+
+    @classmethod
+    def from_json(
+            cls,
+            data: Dict[str, Any],
+    ) -> 'ClassEntry':
+        return cls.model_validate(data)
+
+    def to_json(self) -> Dict[str, Any]:
+        return self.model_dump(mode="json")

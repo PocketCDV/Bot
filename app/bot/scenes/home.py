@@ -1,56 +1,103 @@
-import asyncio
-from typing import Sequence, Coroutine, Any, List, Set, Tuple, Dict
+from aiogram.fsm.scene import on
+from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.i18n import gettext as _, I18n
 
-from aiogram import Bot
-from aiogram.fsm.scene import Scene, on
-from aiogram.types import Message, CallbackQuery
-from aiogram.utils.i18n import gettext as _
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.assets.controllers.api import APIController
-from app.assets.models.class_entry import ClassEntry
+from app.assets.controllers.schedule import ScheduleController
+from app.assets.models.schedule_day_record import ScheduleDayRecord
+from app.bot.actions.switch_scene import SwitchSceneAction
 from app.bot.middlewares.message_id import UserMessage
-from app.database.models import Room
+from app.bot.scenes.base import BaseScene
 
 
-class HomeScene(Scene, state="home"):
+class HomeScene(BaseScene, state="home"):
     @on.message.enter()
     async def on_message_enter(
             self,
             message: Message,
-            bot: Bot,
-            database_session: AsyncSession,
             user_message: UserMessage,
             session_id: str,
-            api_controller: APIController,
+            i18n: I18n,
+            schedule_controller: ScheduleController,
     ) -> None:
-        await self._open_home_page(
-            bot=bot,
-            database_session=database_session,
-            user_message=user_message,
-            session_id=session_id,
-            api_controller=api_controller,
-            delete_message_id=message.message_id,
+        if session_id is None:
+            await self.wizard.goto("login")
+            return
+
+        schedule: ScheduleDayRecord = await schedule_controller.get_home_schedule(session_id)
+
+        reply_markup: InlineKeyboardMarkup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text=_("button.view_schedule"),
+                        callback_data=SwitchSceneAction(scene="schedule").pack(),
+                    )
+                ]
+            ]
         )
+
+        if schedule.class_records:
+            await user_message.new_message(
+                _("message.home").format(
+                    first_name=message.from_user.first_name,
+                    classes=schedule.to_string(i18n),
+                ),
+                reply_markup=reply_markup,
+                message_to_delete=message.message_id,
+            )
+        else:
+            await user_message.new_message(
+                _("message.home.no_classes").format(
+                    first_name=message.from_user.first_name,
+                ),
+                reply_markup=reply_markup,
+                message_to_delete=message.message_id,
+            )
 
     @on.callback_query.enter()
     async def on_callback_query_enter(
             self,
             callback_query: CallbackQuery,
-            bot: Bot,
-            database_session: AsyncSession,
             user_message: UserMessage,
             session_id: str,
-            api_controller: APIController,
+            i18n: I18n,
+            schedule_controller: ScheduleController,
     ) -> None:
-        await self._open_home_page(
-            bot=bot,
-            database_session=database_session,
-            user_message=user_message,
-            session_id=session_id,
-            api_controller=api_controller,
+        if session_id is None:
+            await self.wizard.goto("login")
+            return
+
+        schedule: ScheduleDayRecord = await schedule_controller.get_home_schedule(session_id)
+
+        reply_markup: InlineKeyboardMarkup = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text=_("button.view_schedule"),
+                        callback_data=SwitchSceneAction(scene="schedule").pack(),
+                    )
+                ]
+            ]
         )
+
+        if not schedule.class_records:
+            await user_message.new_message(
+                _("message.home.no_classes").format(
+                    first_name=callback_query.from_user.first_name,
+                ),
+                reply_markup=reply_markup,
+            )
+            return
+
+        await user_message.new_message(
+            _("message.home").format(
+                first_name=callback_query.from_user.first_name,
+                classes=schedule.to_string(i18n),
+            ),
+            reply_markup=reply_markup,
+        )
+
+        await callback_query.answer()
 
     @on.message()
     async def on_message(
@@ -58,65 +105,3 @@ class HomeScene(Scene, state="home"):
             message: Message,
     ) -> None:
         await message.delete()
-
-    async def _open_home_page(
-            self,
-            bot: Bot,
-            database_session: AsyncSession,
-            user_message: UserMessage,
-            session_id: str,
-            api_controller: APIController,
-            *,
-            delete_message_id: int | None = None,
-    ) -> None:
-        if session_id is None:
-            await self.wizard.goto("login")
-            return
-
-        class_entries: Sequence[ClassEntry] = await api_controller.get_upcoming_schedule(session_id)
-
-        room_ids: Tuple[int] = tuple(dict.fromkeys(class_entry.room for class_entry in class_entries))
-
-        found_room_names: Dict[int, str] = {
-            row.id: row.name
-            for row in (
-                await database_session.execute(
-                    select(Room.id, Room.name)
-                    .filter(Room.id.in_(room_ids))
-                )
-            ).all()
-        }
-
-        room_names: Dict[int, str] = {
-            room_id: found_room_names.get(room_id, "Unknown room")
-            for room_id in room_ids
-        }
-
-        class_entries_strings: List[str] = []
-        for class_entry in class_entries:
-            class_entries_strings.append(
-                _("message.schedule.class_entry.short").format(
-                    title=class_entry.title,
-                    start_time=class_entry.start_time.strftime("%H:%M"),
-                    end_time=class_entry.end_time.strftime("%H:%M"),
-                    room=room_names[class_entry.room],
-                )
-            )
-
-        home_message_coroutine: Coroutine[Any, Any, None] = user_message.edit_message(
-            _("message.home").format(
-                classes="\n\n".join(class_entries_strings),
-            )
-        )
-
-        if delete_message_id is not None:
-            await asyncio.gather(
-                home_message_coroutine,
-                bot.delete_message(
-                    user_message.user_id,
-                    delete_message_id,
-                ),
-                return_exceptions=True,
-            )
-        else:
-            await home_message_coroutine

@@ -1,16 +1,14 @@
-import asyncio
-from typing import Coroutine, Any
-
 from aiogram import Bot
-from aiogram.fsm.scene import Scene, on
+from aiogram.fsm.scene import on
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo, CallbackQuery
 from aiogram.utils.i18n import gettext as _
 
 from app.bot.middlewares.message_id import UserMessage
+from app.bot.scenes.base import BaseScene
 from config import Config
 
 
-class LoginScene(Scene, state="login"):
+class LoginScene(BaseScene, state="login"):
     @on.message.enter()
     async def on_message_enter(
             self,
@@ -54,7 +52,7 @@ class LoginScene(Scene, state="login"):
             user_message: UserMessage,
             delete_message_id: int | None = None,
     ) -> None:
-        login_message_coroutine: Coroutine[Any, Any, None] = user_message.edit_message(
+        await user_message.edit_message(
             _("message.login"),
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[
@@ -65,17 +63,6 @@ class LoginScene(Scene, state="login"):
                         )
                     ]
                 ]
-            )
+            ),
+            message_to_delete=delete_message_id,
         )
-
-        if delete_message_id is not None:
-            await asyncio.gather(
-                login_message_coroutine,
-                bot.delete_message(
-                    user_message.user_id,
-                    delete_message_id,
-                ),
-                return_exceptions = True,
-            )
-        else:
-            await login_message_coroutine

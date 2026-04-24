@@ -1,6 +1,6 @@
-from typing import Callable, Any, Awaitable, Set, Dict
+from typing import Callable, Any, Awaitable, Dict
 
-from aiogram import BaseMiddleware, Router
+from aiogram import BaseMiddleware
 from aiogram.fsm.context import FSMContext
 from aiogram.types import TelegramObject, User
 

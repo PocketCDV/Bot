@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import sys
 from ssl import create_default_context
 

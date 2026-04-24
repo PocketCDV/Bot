@@ -1,5 +1,4 @@
-from datetime import date, datetime, timezone, timedelta
-from http.cookies import Morsel
+from datetime import date
 from ssl import SSLContext
 from typing import Any, Dict, List, Sequence
 
@@ -86,18 +85,3 @@ class APIController:
         class_entries.sort(key=lambda entry: entry.start_time)
 
         return class_entries
-
-    async def get_upcoming_schedule(
-            self,
-            session_id: str,
-            *,
-            days: int | None = None,
-    ) -> Sequence[ClassEntry]:
-        start_date: date = datetime.now(timezone.utc).date()
-        end_date: date = start_date + timedelta(days=days or 0)
-
-        return await self.get_schedule(
-            session_id,
-            start_date,
-            end_date,
-        )

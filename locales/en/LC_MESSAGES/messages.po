@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-04-23 05:21+0200\n"
-"PO-Revision-Date: 2026-04-23 05:33+0200\n"
+"POT-Creation-Date: 2026-04-24 07:18+0200\n"
+"PO-Revision-Date: 2026-04-24 07:21+0200\n"
 "Last-Translator: \n"
 "Language-Team: en <LL@li.org>\n"
 "Language: en\n"
@@ -30,47 +30,84 @@ msgstr ""
 msgid "button.go_home"
 msgstr "Go to Home Page"
 
-#: app./bot/scenes/home.py:73
+#: app./assets/models/class_record.py:39
 msgid "message.schedule.class_entry.short"
 msgstr ""
 "<b>{start_time} - {end_time} | {room}</b>\n"
 "<i>{title}</i>"
 
-#: app./bot/scenes/home.py:82
+#: app./bot/scenes/home.py:32 app./bot/scenes/home.py:76
+msgid "button.view_schedule"
+msgstr "View daily schedule"
+
+#: app./bot/scenes/home.py:41 app./bot/scenes/home.py:93
 msgid "message.home"
 msgstr ""
-"<b>Here are your classes for today:</b>\n"
+"<b>Welcome, {first_name}.</b>\n"
+"Here are your classes for today:\n"
 "\n"
 "{classes}"
 
-#: app./bot/scenes/login.py:58
+#: app./bot/scenes/home.py:50 app./bot/scenes/home.py:85
+msgid "message.home.no_classes"
+msgstr ""
+"<b>Welcome, {first_name}.</b>\n"
+"You are free for today. Cheers!"
+
+#: app./bot/scenes/login.py:56
 msgid "message.login"
 msgstr ""
 "Your Wirtualna Uczelnia session has ended. To keep using PocketCDV, "
 "please log in again using the button below — it only takes a moment."
 
-#: app./bot/scenes/login.py:63 app./bot/scenes/start.py:67
+#: app./bot/scenes/login.py:61 app./bot/scenes/start.py:68
 msgid "button.login"
 msgstr "Log in"
 
-#: app./bot/scenes/start.py:34
+#: app./bot/scenes/schedule.py:42 app./bot/scenes/schedule.py:115
+msgid "button.flip_page.backwards"
+msgstr "<<"
+
+#: app./bot/scenes/schedule.py:46 app./bot/scenes/schedule.py:119
+msgid "button.flip_page.forwards"
+msgstr ">>"
+
+#: app./bot/scenes/schedule.py:52 app./bot/scenes/schedule.py:125
+msgid "button.back"
+msgstr "Back"
+
+#: app./bot/scenes/schedule.py:61 app./bot/scenes/schedule.py:134
+msgid "message.schedule"
+msgstr ""
+"Schedule for <b>{schedule_date}</b>:\n"
+"\n"
+"{schedule}"
+
+#: app./bot/scenes/schedule.py:69 app./bot/scenes/schedule.py:142
+msgid "message.schedule.no_classes"
+msgstr ""
+"Schedule for <b>{schedule_date}</b>:\n"
+"\n"
+"No classes."
+
+#: app./bot/scenes/start.py:35
 msgid "message.greeting"
 msgstr ""
 "<b>Greetings, {first_name}!</b>\n"
 "\n"
 "Introducing <b>PocketCDV</b> - a Telegram bot for tracking class "
 "schedules at Collegium da Vinci. Our goal is simplicity and "
-"accessibility: wherever you are, just two taps and you'll instantly "
-"know when your next class is.\n"
+"accessibility: wherever you are, just two taps and you'll instantly know "
+"when your next class is.\n"
 "\n"
-"Many new features are already in development, and we'll keep you "
-"updated on all the latest changes."
+"Many new features are already in development, and we'll keep you updated "
+"on all the latest changes."
 
-#: app./bot/scenes/start.py:38
+#: app./bot/scenes/start.py:39
 msgid "button.proceed"
 msgstr "Proceed"
 
-#: app./bot/scenes/start.py:62
+#: app./bot/scenes/start.py:63
 msgid "message.greeting.login"
 msgstr ""
 "To get started, we'll need your Wirtualna Uczelnia login credentials. "

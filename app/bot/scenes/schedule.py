@@ -26,6 +26,10 @@ class ScheduleScene(BaseScene, state="schedule"):
             schedule_controller: ScheduleController,
             initial_date: date | None = None,
     ) -> None:
+        if session_id is None:
+            await self.wizard.goto("login")
+            return
+
         schedule_date = initial_date or datetime.now(timezone.utc).date()
         start_date, end_date = self._get_week_range_by_date(schedule_date)
 
@@ -96,6 +100,10 @@ class ScheduleScene(BaseScene, state="schedule"):
             i18n: I18nContext,
             schedule_controller: ScheduleController,
     ) -> None:
+        if session_id is None:
+            await self.wizard.goto("login")
+            return
+
         data: Dict[str, Any] = await state.get_data()
 
         schedule_date: date = date.fromisoformat(data.get("schedule_date"))

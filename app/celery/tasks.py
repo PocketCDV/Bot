@@ -3,6 +3,8 @@ import sys
 from typing import Any, Dict
 
 from aiogram import Bot
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram_i18n.cores import FluentCompileCore
@@ -52,7 +54,10 @@ async def __async_set_successful_login_message(
         telegram_id: int,
         locale: str,
 ) -> None:
-    bot: Bot = Bot(token=config.telegram_bot_token.get_secret_value())
+    bot: Bot = Bot(
+        token=config.telegram_bot_token.get_secret_value(),
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+    )
 
     core = FluentCompileCore(path="locales/{locale}")
     await core.startup()
@@ -71,12 +76,12 @@ async def __async_set_successful_login_message(
     )
 
     await user_message.edit_message(
-        core.get("login-success", locale=locale),
+        core.get_translator(locale).format("login-success")[0],
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=core.get("button-go-home", locale=locale),
+                        text=core.get_translator(locale).format("button-go-home")[0],
                         callback_data=HomeAction().pack(),
                     )
                 ]

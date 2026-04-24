@@ -5,7 +5,7 @@ from typing import Any, Dict
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.utils.i18n import I18n
+from aiogram_i18n.cores import FluentRuntimeCore
 from redis.asyncio import Redis
 from sqlalchemy.dialects.postgresql import insert
 
@@ -54,6 +54,9 @@ async def __async_set_successful_login_message(
 ) -> None:
     bot: Bot = Bot(token=config.telegram_bot_token.get_secret_value())
 
+    core = FluentRuntimeCore(path="locales/{locale}")
+    await core.startup()
+
     state: FSMContext = get_state(
         Redis.from_url(config.redis_dsn.get_secret_value()),
         bot,
@@ -67,15 +70,13 @@ async def __async_set_successful_login_message(
         _bot=bot,
     )
 
-    i18n: I18n = I18n(path="locales", default_locale=locale)
-
     await user_message.edit_message(
-        i18n.gettext("message.login.success", locale=locale),
+        core.get("login-success", locale=locale),
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=i18n.gettext("button.go_home"),
+                        text=core.get("button-go-home", locale=locale),
                         callback_data=HomeAction().pack(),
                     )
                 ]

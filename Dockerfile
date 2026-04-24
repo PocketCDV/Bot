@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /opt/app
 COPY pyproject.toml poetry.lock ./
-RUN pip install poetry && poetry install --only main --no-interaction
+RUN pip install poetry && poetry install --only main --no-interaction --no-root
 
 COPY . .
 

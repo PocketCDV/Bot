@@ -11,7 +11,5 @@ RUN pip install poetry && poetry install --only main --no-interaction --no-root
 
 COPY . .
 
-RUN poetry run pybabel compile -d locales -D messages
-
 RUN adduser --disabled-password appuser && chown -R appuser .
 USER appuser

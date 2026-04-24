@@ -1,6 +1,5 @@
 from typing import List, Any, Dict
 
-from aiogram.utils.i18n import I18n
 from aiogram_i18n import I18nContext
 from pydantic import BaseModel, Field
 

@@ -3,7 +3,6 @@ import asyncio
 from aiogram import Bot
 from aiogram.fsm.scene import on
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, WebAppInfo
-from aiogram.utils.i18n import gettext as _
 from aiogram_i18n import I18nContext
 
 from app.bot.actions.proceed import ProceedAction

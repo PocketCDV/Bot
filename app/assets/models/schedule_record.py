@@ -1,7 +1,6 @@
 from datetime import date
 from typing import Dict, Any
 
-from aiogram.utils.i18n import I18n
 from aiogram_i18n import I18nContext
 from pydantic import BaseModel, Field
 

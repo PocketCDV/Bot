@@ -4,7 +4,6 @@ from typing import Dict, Any, Tuple
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.scene import on
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
-from aiogram.utils.i18n import gettext as _, I18n
 from aiogram_i18n import I18nContext
 
 from app.assets.controllers.schedule import ScheduleController

@@ -1,7 +1,7 @@
 from datetime import date
 from typing import Dict, Any
 
-from aiogram.utils.i18n import I18n
+from aiogram_i18n import I18nContext
 from pydantic import BaseModel, Field
 
 from app.assets.models.schedule_day_record import ScheduleDayRecord
@@ -29,9 +29,11 @@ class ScheduleRecord(BaseModel):
     def to_string(
             self,
             schedule_date: date,
-            i18n: I18n,
+            i18n: I18nContext,
     ) -> str | None:
         schedule_day: ScheduleDayRecord | None = self.schedule.get(schedule_date)
 
-        if schedule_day is not None:
-            return schedule_day.to_string(i18n)
+        if schedule_day is None:
+            return ""
+
+        return schedule_day.to_string(i18n)

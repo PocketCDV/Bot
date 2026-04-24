@@ -35,12 +35,12 @@ def main() -> None:
     dispatcher: Dispatcher = create_dispatcher()
     dispatcher.startup.register(on_startup)
 
-    bot = Bot(
+    bot: Bot = Bot(
         token=config.telegram_bot_token.get_secret_value(),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
 
-    app = Application()
+    app: Application = Application()
     webhook_requests_handler = SimpleRequestHandler(
         dispatcher=dispatcher,
         bot=bot,

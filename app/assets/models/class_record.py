@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Dict, Any
 
-from aiogram.utils.i18n import I18n, gettext as _
+from aiogram_i18n import I18nContext
 from pydantic import BaseModel
 
 
@@ -33,12 +33,12 @@ class ClassRecord(BaseModel):
 
     def to_string(
             self,
-            i18n: I18n
+            i18n: I18nContext,
     ) -> str:
-        with i18n.context():
-            return _("message.schedule.class_entry.short").format(
-                title=self.title,
-                start_time=self.start_time.strftime("%H:%M"),
-                end_time=self.end_time.strftime("%H:%M"),
-                room=self.room_name,
-            )
+        return i18n.get(
+            "schedule-class-entry.short",
+            title=self.title,
+            start_time=self.start_time.strftime("%H:%M"),
+            end_time=self.end_time.strftime("%H:%M"),
+            room=self.room_name,
+        )

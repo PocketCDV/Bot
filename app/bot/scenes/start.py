@@ -3,7 +3,7 @@ import asyncio
 from aiogram import Bot
 from aiogram.fsm.scene import on
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, WebAppInfo
-from aiogram.utils.i18n import gettext as _
+from aiogram_i18n import I18nContext
 
 from app.bot.actions.proceed import ProceedAction
 from app.bot.logging import logger
@@ -25,6 +25,7 @@ class StartScene(BaseScene, state="start"):
             bot: Bot,
             user: User,
             user_message: UserMessage,
+            i18n: I18nContext,
     ) -> None:
         if user is not None:
             await self.wizard.goto("home")
@@ -32,11 +33,17 @@ class StartScene(BaseScene, state="start"):
 
         await asyncio.gather(
             user_message.new_message(
-                _("message.greeting").format(first_name=message.from_user.first_name),
+                i18n.get(
+                    "greeting",
+                    first_name=message.from_user.first_name,
+                ),
                 reply_markup=InlineKeyboardMarkup(
                     inline_keyboard=[
                         [
-                            InlineKeyboardButton(text=_("button.proceed"), callback_data=ProceedAction().pack())
+                            InlineKeyboardButton(
+                                text=i18n.get("button-proceed"),
+                                callback_data=ProceedAction().pack(),
+                            )
                         ]
                     ]
                 ),
@@ -58,14 +65,17 @@ class StartScene(BaseScene, state="start"):
             callback_query: CallbackQuery,
             config: Config,
             user_message: UserMessage,
+            i18n: I18nContext,
     ) -> None:
         await user_message.edit_message(
-            _("message.greeting.login"),
+            i18n.get(
+                "greeting-login",
+            ),
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[
                     [
                         InlineKeyboardButton(
-                            text=_("button.login"),
+                            text=i18n.get("button-login"),
                             web_app=WebAppInfo(url=config.web_app_url),
                         )
                     ]

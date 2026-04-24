@@ -5,12 +5,14 @@ from aiogram.fsm.scene import SceneRegistry
 from aiogram.fsm.storage.base import DefaultKeyBuilder
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.fsm.strategy import FSMStrategy
-from aiogram.utils.i18n import I18n, ConstI18nMiddleware
+from aiogram_i18n import I18nMiddleware
+from aiogram_i18n.cores import FluentCompileCore
 from certifi import where
 from redis.asyncio import Redis
 
 from app.assets.controllers.api import APIController
 from app.assets.controllers.schedule import ScheduleController
+from app.bot.managers.locale import LocaleManager
 from app.bot.middlewares.database import DatabaseMiddleware
 from app.bot.middlewares.message_id import MessageIdMiddleware
 from app.bot.middlewares.session_id import SessionIDMiddleware
@@ -18,6 +20,7 @@ from app.bot.middlewares.user import UserMiddleware
 from app.bot.routes.home import home_router
 from app.bot.routes.start import start_router
 from app.bot.scenes.home import HomeScene
+from app.bot.scenes.language import LanguageScene
 from app.bot.scenes.login import LoginScene
 from app.bot.scenes.schedule import ScheduleScene
 from app.bot.scenes.start import StartScene
@@ -40,7 +43,6 @@ def create_dispatcher() -> Dispatcher:
     :return: Dispatcher instance.
     """
 
-    i18n = I18n(path="locales", default_locale="en", domain="messages")
     database = Database.from_dsn(config.database_dsn.get_secret_value())
     redis = Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True)
     api_controller = APIController(config.api_url, ssl_context=create_default_context(cafile=where()))
@@ -52,7 +54,7 @@ def create_dispatcher() -> Dispatcher:
         ),
         fsm_strategy=FSMStrategy.GLOBAL_USER,
         config=config,
-        i18n=i18n,
+        database=database,
         redis=redis,
         api_controller=api_controller,
         schedule_controller=ScheduleController(
@@ -69,7 +71,15 @@ def create_dispatcher() -> Dispatcher:
         MessageIdMiddleware(),
     )
 
-    ConstI18nMiddleware(locale="en", i18n=i18n).setup(dispatcher)
+    I18nMiddleware(
+        core=FluentCompileCore(
+            path="locales/{locale}",
+            default_locale="en",
+        ),
+        manager=LocaleManager(
+            default_locale="en",
+        )
+    ).setup(dispatcher)
 
     dispatcher.include_routers(
         start_router,
@@ -81,6 +91,7 @@ def create_dispatcher() -> Dispatcher:
         HomeScene,
         LoginScene,
         ScheduleScene,
+        LanguageScene,
     )
 
     return dispatcher

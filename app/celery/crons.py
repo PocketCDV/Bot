@@ -3,6 +3,8 @@ import sys
 from ssl import create_default_context
 
 from aiogram import Bot
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import DefaultKeyBuilder, StorageKey
 from aiogram.fsm.storage.redis import RedisStorage
@@ -25,7 +27,10 @@ async def __async_session_refresh() -> None:
     redis = Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True)
     api_controller = APIController(config.api_url, ssl_context=create_default_context(cafile=where()))
 
-    bot: Bot = Bot(token=config.telegram_bot_token.get_secret_value())
+    bot: Bot = Bot(
+        token=config.telegram_bot_token.get_secret_value(),
+        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
+    )
 
     async with database.session_maker() as database_session:
         user_telegram_ids = await database_session.stream_scalars(

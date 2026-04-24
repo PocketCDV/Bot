@@ -14,7 +14,7 @@ from config import config
 async def main() -> None:
     dispatcher: Dispatcher = create_dispatcher()
 
-    bot = Bot(
+    bot: Bot = Bot(
         token=config.telegram_bot_token.get_secret_value(),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )

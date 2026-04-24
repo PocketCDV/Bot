@@ -6,6 +6,5 @@
 __pycache__/
 *.py[cod]
 *.so
-*.mo
 
 celerybeat*

@@ -1,10 +1,14 @@
 import asyncio
 from typing import Annotated
 
+from aiogram import Bot
+from aiogram.fsm.context import FSMContext
 from aiogram.utils.web_app import safe_parse_webapp_init_data, WebAppInitData
 from aiohttp import ClientConnectionError, ClientConnectorCertificateError
 from fastapi import APIRouter, Depends, HTTPException
 from redis.asyncio import Redis
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.requests import Request
@@ -14,7 +18,9 @@ from app.asgi.dependencies import config_dependency, redis_dependency, api_contr
     database_session_dependency
 from app.asgi.limiter import limiter
 from app.assets.controllers.api import APIController
-from app.celery.tasks import insert_user_to_database, set_successful_login_message, update_state
+from app.bot.utils import get_state
+from app.celery.tasks import set_successful_login_message
+from app.database.models import User
 from config import Config
 
 auth_router: APIRouter = APIRouter(prefix="/auth", tags=["Auth"])
@@ -70,21 +76,29 @@ async def login(
             detail="Timed out",
         )
 
-    await asyncio.to_thread(
-        insert_user_to_database.delay,
-        telegram_id=telegram_init_data.user.id,
-        first_name=telegram_init_data.user.first_name,
-        locale=telegram_init_data.user.language_code,
+    await database_session.execute(
+        insert(User).values(
+            telegram_id=telegram_init_data.user.id,
+            first_name=telegram_init_data.user.first_name,
+            locale=telegram_init_data.user.language_code,
+        ).on_conflict_do_nothing(index_elements=["telegram_id"])
+    )
+    await database_session.commit()
+
+    user: User | None = await database_session.scalar(
+        select(User)
+        .filter_by(telegram_id=telegram_init_data.user.id).limit(1)
     )
 
-    await asyncio.to_thread(
-        update_state.delay,
-        telegram_id=telegram_init_data.user.id,
-        data={"session_id": session_id},
+    state: FSMContext = get_state(
+        Redis.from_url(config.redis_dsn.get_secret_value()),
+        Bot(token=config.telegram_bot_token.get_secret_value()),
+        user.telegram_id,
     )
+    await state.update_data(session_id=session_id)
 
     await asyncio.to_thread(
         set_successful_login_message.delay,
-        telegram_id=telegram_init_data.user.id,
-        locale=telegram_init_data.user.language_code,
+        telegram_id=user.telegram_id,
+        locale=user.locale,
     )

@@ -60,6 +60,7 @@ class ScheduleScene(BaseScene, state="schedule"):
             await user_message.edit_message(
                 i18n.get(
                     "schedule",
+                    weekday=i18n.get("weekday", weekday=schedule_date.weekday()),
                     schedule_date=schedule_date.strftime("%d.%m.%Y"),
                     schedule=schedule.to_string(schedule_date, i18n),
                 ),
@@ -68,9 +69,9 @@ class ScheduleScene(BaseScene, state="schedule"):
         else:
             await user_message.edit_message(
                 i18n.get(
-                    "schedule",
+                    "schedule-no-classes",
+                    weekday=i18n.get("weekday", weekday=schedule_date.weekday()),
                     schedule_date=schedule_date.strftime("%d.%m.%Y"),
-                    schedule=schedule.to_string(schedule_date, i18n),
                 ),
                 reply_markup=reply_markup,
             )
@@ -142,6 +143,7 @@ class ScheduleScene(BaseScene, state="schedule"):
             await user_message.edit_message(
                 i18n.get(
                     "schedule",
+                    weekday=i18n.get("weekday", weekday=schedule_date.weekday()),
                     schedule_date=schedule_date.strftime("%d.%m.%Y"),
                     schedule=schedule.to_string(schedule_date, i18n),
                 ),
@@ -150,9 +152,9 @@ class ScheduleScene(BaseScene, state="schedule"):
         else:
             await user_message.edit_message(
                 i18n.get(
-                    "schedule",
+                    "schedule-no-classes",
+                    weekday=i18n.get("weekday", weekday=schedule_date.weekday()),
                     schedule_date=schedule_date.strftime("%d.%m.%Y"),
-                    schedule=schedule.to_string(schedule_date, i18n),
                 ),
                 reply_markup=reply_markup,
             )

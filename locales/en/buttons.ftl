@@ -1,13 +1,13 @@
-button-back = Back
+button-back = 👈 Back
 
 button-flip-page =
-    .forwards = >>
-    .backwards = <<
+    .forwards = ▶️
+    .backwards = ◀️
 
-button-go-home = Go to the Home Page
+button-go-home = 🏠 Go to the Home Page
 
-button-login = Log in
+button-login = 👉 Log in
 
-button-proceed = Proceed
+button-proceed = 👉 Proceed
 
-button-view-schedule = View schedule
+button-view-schedule = 🗓 View schedule

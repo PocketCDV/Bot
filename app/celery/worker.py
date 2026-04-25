@@ -28,7 +28,11 @@ def create_worker() -> Celery:
     celery.conf.beat_schedule = {
         "cron_session_refresh": {
             "task": "session_refresh",
-            "schedule": crontab(minute="*/5"),
+            "schedule": crontab(minute="5,15,25,35,45,55"),
+        },
+        "cron_home_page_refresh": {
+            "task": "home_page_refresh",
+            "schedule": crontab(minute="0,10,20,30,40,50"),
         },
     }
 

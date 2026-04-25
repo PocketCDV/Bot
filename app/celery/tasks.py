@@ -33,10 +33,9 @@ async def __async_set_successful_login_message(
         telegram_id,
     )
 
-    message_id: int = await state.get_value("message_id")
     user_message: UserMessage = UserMessage(
         telegram_id,
-        message_id,
+        await state.get_value("message_id"),
         _bot=bot,
     )
 

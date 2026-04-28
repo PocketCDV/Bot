@@ -23,7 +23,7 @@ from app.bot.actions.switch_scene import SwitchSceneAction
 from app.bot.middlewares.message_id import UserMessage
 from app.bot.utils import get_state
 from app.celery.worker import worker, config
-from app.database.database import Database
+from app.assets.controllers.database import Database
 from app.database.models import User
 
 

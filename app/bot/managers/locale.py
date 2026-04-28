@@ -2,7 +2,7 @@ from aiogram.types import User as AiogramUser
 from aiogram_i18n.managers import BaseManager
 from sqlalchemy import update
 
-from app.database.database import Database
+from app.assets.controllers.database import Database
 from app.database.models import User
 
 

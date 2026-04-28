@@ -24,7 +24,7 @@ from app.bot.scenes.language import LanguageScene
 from app.bot.scenes.login import LoginScene
 from app.bot.scenes.schedule import ScheduleScene
 from app.bot.scenes.start import StartScene
-from app.database.database import Database
+from app.assets.controllers.database import Database
 from config import config
 
 

@@ -7,7 +7,7 @@ from aiohttp import ClientSession
 from certifi import where
 from sqlalchemy.dialects.postgresql import insert
 
-from app.database.database import Database
+from app.assets.controllers.database import Database
 from app.database.models import Room
 from config import config
 

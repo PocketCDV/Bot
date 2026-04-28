@@ -16,7 +16,7 @@ from app.asgi.api.router import api_router
 from app.asgi.limiter import limiter
 from app.asgi.logging import logger
 from app.assets.controllers.api import APIController
-from app.database.database import Database
+from app.assets.controllers.database import Database
 from config import config
 
 

@@ -8,7 +8,7 @@ from app.assets.models.class_entry import ClassEntry
 from app.assets.models.class_record import ClassRecord
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.assets.models.schedule_record import ScheduleRecord
-from app.database.database import Database
+from app.assets.controllers.database import Database
 from app.database.models import Room
 
 

@@ -3,7 +3,7 @@ from typing import Callable, Dict, Any, Awaitable
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 
-from app.database.database import Database
+from app.assets.controllers.database import Database
 
 
 class DatabaseMiddleware(BaseMiddleware):

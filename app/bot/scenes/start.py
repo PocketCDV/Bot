@@ -1,13 +1,14 @@
 from aiogram.fsm.scene import on
-from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, WebAppInfo
+from aiogram.types import Message, CallbackQuery
 from aiogram_i18n import I18nContext
 
 from app.bot.actions.proceed import ProceedAction
+from app.bot.keyboards.login import get_login_keyboard
+from app.bot.keyboards.start import get_start_keyboard
 from app.bot.logging import logger
 from app.bot.middlewares.message_id import UserMessage
 from app.bot.scenes.base import BaseScene
 from app.database.models import User
-from config import Config
 
 
 class StartScene(BaseScene, state="start"):
@@ -32,16 +33,7 @@ class StartScene(BaseScene, state="start"):
                 "greeting",
                 first_name=message.from_user.first_name,
             ),
-            reply_markup=InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(
-                            text=i18n.get("button-proceed"),
-                            callback_data=ProceedAction().pack(),
-                        )
-                    ]
-                ]
-            ),
+            reply_markup=get_start_keyboard(i18n),
             message_to_delete=message.message_id,
         )
 
@@ -53,7 +45,6 @@ class StartScene(BaseScene, state="start"):
     async def on_proceed(
             self,
             callback_query: CallbackQuery,
-            config: Config,
             user_message: UserMessage,
             i18n: I18nContext,
     ) -> None:
@@ -61,16 +52,7 @@ class StartScene(BaseScene, state="start"):
             i18n.get(
                 "greeting-login",
             ),
-            reply_markup=InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(
-                            text=i18n.get("button-login"),
-                            web_app=WebAppInfo(url=config.web_app_url),
-                        )
-                    ]
-                ]
-            )
+            reply_markup=get_login_keyboard(i18n)
         )
         await callback_query.answer()
 

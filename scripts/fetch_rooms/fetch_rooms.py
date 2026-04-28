@@ -19,6 +19,13 @@ async def fetch_room(
         session: ClientSession,
         room: int,
 ) -> str:
+    """
+    Fetches a single room name from WU.
+    :param session: WU session ID.
+    :param room: Room id.
+    :return: Room name.
+    """
+
     async with session.post(
             "https://wu.cdv.pl/ajax.php",
             params={"action": "get-classes-term-details-for-student"},

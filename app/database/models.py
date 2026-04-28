@@ -10,14 +10,6 @@ Base = declarative_base()
 class User(Base):
     """
     Database user object.
-
-    Attributes:
-        id: UUID.
-        telegram_id: User's telegram ID.
-        first_name: First name from telegram.
-        locale: User's locale. Used to localize responses.
-        created_at: User's creation date.
-        updated_at: User's last update date.
     """
 
     __tablename__ = "users"
@@ -61,4 +53,11 @@ class Room(Base):
     __tablename__ = "rooms"
 
     id = Column(Integer(), primary_key=True, nullable=False, index=True, autoincrement=False)
+    """
+    Room ID.
+    """
+
     name = Column(String(64), nullable=False)
+    """
+    Room display name.
+    """

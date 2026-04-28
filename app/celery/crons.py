@@ -70,6 +70,10 @@ async def __async_session_refresh() -> None:
 
 
 async def __async_home_page_refresh() -> None:
+    """
+    Asynchronously refresh data on every user's home page.
+    """
+
     core = FluentCompileCore(path="locales/{locale}")
     await core.startup()
 
@@ -162,6 +166,10 @@ def session_refresh() -> None:
 
 @worker.task(name="home_page_refresh")
 def home_page_refresh() -> None:
+    """
+    Celery task for refreshing every user's home page.
+    """
+
     if sys.platform == "win32":
         loop = asyncio.SelectorEventLoop()
         asyncio.set_event_loop(loop)

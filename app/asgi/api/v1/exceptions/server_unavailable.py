@@ -1,6 +1,6 @@
 from starlette import status
 
-from app.asgi.api.v1.exceptions.api import APIError
+from app.asgi.api.v1.exceptions import APIError
 
 
 class ServerUnavailableError(APIError):

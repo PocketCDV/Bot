@@ -6,6 +6,8 @@ from aiohttp import ClientTimeout
 
 from app.assets.controllers.client import ClientController
 from app.assets.models.class_entry import ClassEntry
+from app.bot.exceptions import BotError
+from app.bot.exceptions.invalid_session import InvalidSessionError
 
 
 class CDVController:
@@ -78,7 +80,9 @@ class CDVController:
                 data: Dict[str, Any] = await response.json()
 
         if not isinstance(data["error_code"], int) or data["error_code"]:
-            raise Exception(f"Error while getting schedule data: {data['error_code']}")
+            if data["error_code"] == 56:
+                raise InvalidSessionError("User session is invalid")
+            raise BotError("An error occurred while retrieving schedule data")
 
         for data_entry in data["return"]:
             class_entries.append(ClassEntry.from_data(data_entry))

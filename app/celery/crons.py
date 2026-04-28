@@ -21,6 +21,8 @@ from app.assets.controllers.database import DatabaseController
 from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.bot.actions.switch_scene import SwitchSceneAction
+from app.bot.exceptions import BotError
+from app.bot.exceptions.invalid_session import InvalidSessionError
 from app.bot.middlewares.message_id import UserMessage
 from app.bot.utils import get_state
 from app.celery.worker import worker, config
@@ -87,7 +89,6 @@ async def __async_home_page_refresh() -> None:
         cdv,
         database,
     )
-
     bot: Bot = Bot(
         token=config.telegram_bot_token.get_secret_value(),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
@@ -99,12 +100,11 @@ async def __async_home_page_refresh() -> None:
         )
 
         async for user in users:
-            user: User = user
             await asyncio.sleep(0.1)
 
+            user: User = user
             state: FSMContext = get_state(redis, bot, user.telegram_id)
             scene_state: str | None = await state.get_state()
-
             if scene_state is None or scene_state != "home":
                 continue
 
@@ -115,7 +115,12 @@ async def __async_home_page_refresh() -> None:
                 _bot=bot,
             )
 
-            schedule: ScheduleDayRecord = await schedule.get_home_schedule(session_id)
+            try:
+                schedule: ScheduleDayRecord = await schedule.get_home_schedule(session_id)
+            except InvalidSessionError:
+                continue  # TODO: Login page
+            except BotError:
+                continue
 
             i18n: I18nContext = I18nContext(user.locale, core, MemoryManager(), {})
 

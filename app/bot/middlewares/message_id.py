@@ -15,7 +15,7 @@ class UserMessage:
 
     _bot: Bot
 
-    async def new_message(
+    async def new(
             self,
             text: str,
             *,
@@ -49,7 +49,7 @@ class UserMessage:
 
         self.message_id = new_message.message_id
 
-    async def edit_message(
+    async def edit(
             self,
             text: str,
             *,
@@ -70,7 +70,7 @@ class UserMessage:
             if isinstance(error, TelegramBadRequest) and "message is not modified" in error.message:
                 return
 
-            await self.new_message(
+            await self.new(
                 text,
                 reply_markup=reply_markup,
                 message_to_delete=message_to_delete,
@@ -82,7 +82,7 @@ class MessageIdMiddleware(BaseMiddleware):
             self,
             handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
             event: TelegramObject,
-            data: Dict[str, Any]
+            data: Dict[str, Any],
     ) -> Any:
         from_user: User | None = data.get("event_from_user")
 

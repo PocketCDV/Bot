@@ -16,7 +16,7 @@ class LoginScene(BaseScene, state="login"):
             user_message: UserMessage,
             i18n: I18nContext,
     ) -> None:
-        await user_message.new_message(
+        await user_message.new(
             i18n.get("login"),
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[
@@ -39,7 +39,7 @@ class LoginScene(BaseScene, state="login"):
             user_message: UserMessage,
             i18n: I18nContext,
     ) -> None:
-        await user_message.edit_message(
+        await user_message.edit(
             i18n.get("login"),
             reply_markup=InlineKeyboardMarkup(
                 inline_keyboard=[

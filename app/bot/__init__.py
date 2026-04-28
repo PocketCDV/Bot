@@ -79,9 +79,9 @@ def create_dispatcher() -> Dispatcher:
 
     _register_middlewares(
         dispatcher,
-        DatabaseMiddleware(database=database),
+        DatabaseMiddleware(database),
         UserMiddleware(),
-        SessionIDMiddleware(cdv=cdv),
+        SessionIDMiddleware(cdv),
         MessageIdMiddleware(),
     )
 

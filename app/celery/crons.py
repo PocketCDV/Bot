@@ -123,7 +123,7 @@ async def __async_home_page_refresh() -> None:
             time: datetime = datetime.now(tz=ZoneInfo("Europe/Warsaw"))
 
             if schedule.class_records:
-                await user_message.edit_message(
+                await user_message.edit(
                     i18n.get(
                         "home-updated",
                         first_name=user.first_name,
@@ -133,7 +133,7 @@ async def __async_home_page_refresh() -> None:
                     reply_markup=reply_markup,
                 )
             else:
-                await user_message.edit_message(
+                await user_message.edit(
                     i18n.get(
                         "home-no-classes-updated",
                         first_name=user.first_name,

@@ -32,7 +32,7 @@ class StartScene(BaseScene, state="start"):
             return
 
         await asyncio.gather(
-            user_message.new_message(
+            user_message.new(
                 i18n.get(
                     "greeting",
                     first_name=message.from_user.first_name,
@@ -67,7 +67,7 @@ class StartScene(BaseScene, state="start"):
             user_message: UserMessage,
             i18n: I18nContext,
     ) -> None:
-        await user_message.edit_message(
+        await user_message.edit(
             i18n.get(
                 "greeting-login",
             ),

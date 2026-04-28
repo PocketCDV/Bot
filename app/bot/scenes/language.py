@@ -35,7 +35,7 @@ class LanguageScene(BaseScene, state="language"):
             )
         )
 
-        await user_message.edit_message(
+        await user_message.edit(
             i18n.get("language"),
             reply_markup=builder.as_markup()
         )
@@ -68,7 +68,7 @@ class LanguageScene(BaseScene, state="language"):
             )
         )
 
-        await user_message.edit_message(
+        await user_message.edit(
             i18n.get("language", locale=callback_data.locale),
             reply_markup=builder.as_markup()
         )

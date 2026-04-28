@@ -12,32 +12,27 @@ from app.bot.actions.switch_scene import SwitchSceneAction
 class BaseScene(Scene, ABC, state="base"):
     async def on_back(
             self,
-            **kwargs
+            **kwargs,
     ) -> None:
         await self.wizard.back(**kwargs)
 
     async def on_switch_scene(
             self,
             callback_data: SwitchSceneAction,
-            **kwargs
+            **kwargs,
     ) -> None:
         await self.wizard.goto(callback_data.scene, **kwargs)
-
-    async def on_scene_leave(
-            self,
-            **kwargs
-    ) -> None:
-        pass
 
     @on.callback_query(BackAction.filter())
     async def __on_back(
             self,
             callback_query: CallbackQuery,
-            **kwargs
+            **kwargs,
     ) -> None:
         if await self.wizard.state.get_state() != "start":
             await self._prepare_coroutine(
                 self.on_back,
+                callback_query=callback_query,
                 **kwargs
             )
 
@@ -46,22 +41,12 @@ class BaseScene(Scene, ABC, state="base"):
             self,
             callback_query: CallbackQuery,
             callback_data: SwitchSceneAction,
-            **kwargs
+            **kwargs,
     ) -> None:
         await self._prepare_coroutine(
             self.on_switch_scene,
+            callback_query=callback_query,
             callback_data=callback_data,
-            **kwargs
-        )
-
-    @on.callback_query.leave()
-    async def __on_scene_leave(
-            self,
-            callback_query: CallbackQuery,
-            **kwargs
-    ) -> None:
-        await self._prepare_coroutine(
-            self.on_scene_leave,
             **kwargs
         )
 

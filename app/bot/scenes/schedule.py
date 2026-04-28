@@ -61,7 +61,7 @@ class ScheduleScene(BaseScene, state="schedule"):
         )
 
         if schedule_date in schedule.schedule:
-            await user_message.edit_message(
+            await user_message.edit(
                 i18n.get(
                     "schedule",
                     weekday=i18n.get("weekday", weekday=schedule_date.weekday()),
@@ -71,7 +71,7 @@ class ScheduleScene(BaseScene, state="schedule"):
                 reply_markup=reply_markup,
             )
         else:
-            await user_message.edit_message(
+            await user_message.edit(
                 i18n.get(
                     "schedule-no-classes",
                     weekday=i18n.get("weekday", weekday=schedule_date.weekday()),
@@ -148,7 +148,7 @@ class ScheduleScene(BaseScene, state="schedule"):
         )
 
         if schedule_date in schedule.schedule:
-            await user_message.edit_message(
+            await user_message.edit(
                 i18n.get(
                     "schedule",
                     weekday=i18n.get("weekday", weekday=schedule_date.weekday()),
@@ -158,7 +158,7 @@ class ScheduleScene(BaseScene, state="schedule"):
                 reply_markup=reply_markup,
             )
         else:
-            await user_message.edit_message(
+            await user_message.edit(
                 i18n.get(
                     "schedule-no-classes",
                     weekday=i18n.get("weekday", weekday=schedule_date.weekday()),

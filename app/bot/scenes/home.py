@@ -43,7 +43,7 @@ class HomeScene(BaseScene, state="home"):
         )
 
         if schedule.class_records:
-            await user_message.new_message(
+            await user_message.new(
                 i18n.get(
                     "home",
                     first_name=message.from_user.first_name,
@@ -53,7 +53,7 @@ class HomeScene(BaseScene, state="home"):
                 message_to_delete=message.message_id,
             )
         else:
-            await user_message.new_message(
+            await user_message.new(
                 i18n.get(
                     "home-no-classes",
                     first_name=message.from_user.first_name,
@@ -95,7 +95,7 @@ class HomeScene(BaseScene, state="home"):
         )
 
         if schedule.class_records:
-            await user_message.edit_message(
+            await user_message.edit(
                 i18n.get(
                     "home",
                     first_name=callback_query.from_user.first_name,
@@ -104,7 +104,7 @@ class HomeScene(BaseScene, state="home"):
                 reply_markup=reply_markup,
             )
         else:
-            await user_message.edit_message(
+            await user_message.edit(
                 i18n.get(
                     "home-no-classes",
                     first_name=callback_query.from_user.first_name,

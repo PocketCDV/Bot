@@ -14,8 +14,12 @@ from starlette import status
 from starlette.requests import Request
 
 from app.asgi.api.v1.auth.models import LoginModel
-from app.asgi.dependencies import config_dependency, redis_dependency, api_controller_dependency, \
-    database_session_dependency
+from app.asgi.dependencies import (
+    config_dependency,
+    redis_dependency,
+    database_session_dependency,
+    cdv_dependency
+)
 from app.asgi.limiter import limiter
 from app.assets.controllers.cdv import CDVController
 from app.bot.utils import get_state
@@ -37,7 +41,7 @@ async def login(
         config: Annotated[Config, Depends(config_dependency)],
         database_session: Annotated[AsyncSession, Depends(database_session_dependency)],
         redis: Annotated[Redis, Depends(redis_dependency)],
-        api_controller: Annotated[CDVController, Depends(api_controller_dependency)],
+        cdv: Annotated[CDVController, Depends(cdv_dependency)],
 ) -> None:
     try:
         telegram_init_data: WebAppInitData = safe_parse_webapp_init_data(
@@ -51,9 +55,9 @@ async def login(
         )
 
     try:
-        session_id: str = await api_controller.get_session_id(login_model.login, login_model.password)
+        session_id: str = await cdv.get_session_id(login_model.login, login_model.password)
 
-        if session_id is None or (await api_controller.refresh_session_id(session_id)) is None:
+        if session_id is None or (await cdv.refresh_session_id(session_id)) is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid credentials",
@@ -91,7 +95,7 @@ async def login(
     )
 
     state: FSMContext = get_state(
-        Redis.from_url(config.redis_dsn.get_secret_value()),
+        redis,
         Bot(token=config.telegram_bot_token.get_secret_value()),
         user.telegram_id,
     )

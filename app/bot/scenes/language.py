@@ -9,6 +9,10 @@ from app.bot.scenes.base import BaseScene
 
 
 class LanguageScene(BaseScene, state="language"):
+    """
+    Scene for switching bot's language.
+    """
+
     @on.callback_query.enter()
     async def on_enter(
             self,

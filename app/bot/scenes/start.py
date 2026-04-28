@@ -13,7 +13,7 @@ from app.database.models import User
 
 class StartScene(BaseScene, state="start"):
     """
-    Base entry scene, introduction for new users and a home page for logged-in users.
+    Base greeting scene, introduction for new users and a home page for logged-in users.
     """
 
     @on.message.enter()

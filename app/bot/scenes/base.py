@@ -10,10 +10,18 @@ from app.bot.actions.switch_scene import SwitchSceneAction
 
 
 class BaseScene(Scene, ABC, state="base"):
+    """
+    Base class for all scenes. Provides basic behaviour for back and switch scene callback actions.
+    """
+
     async def on_back(
             self,
             **kwargs,
     ) -> None:
+        """
+        Base method for returning to the previous scene.
+        """
+
         await self.wizard.back(**kwargs)
 
     async def on_switch_scene(
@@ -21,6 +29,11 @@ class BaseScene(Scene, ABC, state="base"):
             callback_data: SwitchSceneAction,
             **kwargs,
     ) -> None:
+        """
+        Base method for proceeding to a new scene.
+        :param callback_data: SwitchSceneAction data.
+        """
+
         await self.wizard.goto(callback_data.scene, **kwargs)
 
     @on.callback_query(BackAction.filter())
@@ -29,6 +42,10 @@ class BaseScene(Scene, ABC, state="base"):
             callback_query: CallbackQuery,
             **kwargs,
     ) -> None:
+        """
+        Telegram handler for BackAction.
+        """
+
         if await self.wizard.state.get_state() != "start":
             await self._prepare_coroutine(
                 self.on_back,
@@ -43,6 +60,10 @@ class BaseScene(Scene, ABC, state="base"):
             callback_data: SwitchSceneAction,
             **kwargs,
     ) -> None:
+        """
+        Telegram handler for SwitchSceneAction.
+        """
+
         await self._prepare_coroutine(
             self.on_switch_scene,
             callback_query=callback_query,
@@ -56,7 +77,7 @@ class BaseScene(Scene, ABC, state="base"):
             **kwargs
     ) -> Awaitable[None]:
         """
-        Create a coroutine and insert only available arguments to avoid exceptions.
+        Creates a coroutine and insert only available arguments to avoid exceptions.
 
         :param coroutine: Coroutine callable to create.
         :param kwargs: Additional arguments for passing to coroutine.

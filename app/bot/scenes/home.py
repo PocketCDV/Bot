@@ -11,6 +11,10 @@ from app.bot.scenes.base import BaseScene
 
 
 class HomeScene(BaseScene, state="home"):
+    """
+    Home page scene. Displays today's classes, updates every 10 minutes.
+    """
+
     @on.message.enter()
     async def on_message_enter(
             self,
@@ -79,6 +83,15 @@ class HomeScene(BaseScene, state="home"):
             i18n: I18nContext,
             schedule_controller: ScheduleController,
     ) -> tuple[str, InlineKeyboardMarkup]:
+        """
+        Retrieve message text as string, and a reply markup.
+        :param first_name: User's first name.
+        :param session_id: WU session ID.
+        :param i18n: I18n context.
+        :param schedule_controller: ScheduleController instance.
+        :return: Message text and a reply markup.
+        """
+
         schedule: ScheduleDayRecord = await schedule_controller.get_home_schedule(session_id)
 
         if schedule.class_records:

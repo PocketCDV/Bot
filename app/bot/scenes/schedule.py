@@ -16,6 +16,10 @@ from app.bot.scenes.base import BaseScene
 
 
 class ScheduleScene(BaseScene, state="schedule"):
+    """
+    Scene for displaying a paginated daily schedule. Retrieves schedule per-week and caches fetched results.
+    """
+
     @on.callback_query.enter()
     async def on_enter(
             self,
@@ -104,6 +108,14 @@ class ScheduleScene(BaseScene, state="schedule"):
             user_message: UserMessage,
             i18n: I18nContext,
     ) -> None:
+        """
+        Display schedule using current schedule date, ScheduleRecord object and user message data.
+        :param schedule_date: Current schedule data.
+        :param schedule: ScheduleRecord instance.
+        :param user_message: UserMessage instance.
+        :param i18n: I18n context.
+        """
+
         if schedule_date in schedule.schedule:
             text: str = i18n.get(
                 "schedule",
@@ -128,6 +140,15 @@ class ScheduleScene(BaseScene, state="schedule"):
             fetched_start: date,
             fetched_end: date,
     ) -> None:
+        """
+        Saves fetched state about all scheduled classes and visited date range.
+        :param state: FSMContext instance.
+        :param schedule_date: Current schedule data.
+        :param schedule: ScheduleRecord instance.
+        :param fetched_start: Start date of visited date range.
+        :param fetched_end: End date of visited date range.
+        """
+
         await state.update_data(
             schedule_date=schedule_date.isoformat(),
             schedule=schedule.to_json(),

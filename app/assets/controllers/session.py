@@ -7,6 +7,16 @@ _S = TypeVar("_S")
 
 
 class AbstractSessionController(Generic[_S], ABC):
+    """
+    Base class for session controllers.
+
+    Acts as a session manager for any session-based functionality. Works by creating only one session per instance,
+    and providing this session via async context manager.
+
+    If a session closes at any given moment (Due to an exception, crash, manual close call, etc.),
+    this controller will automatically create a new session whenever it is needed next time.
+    """
+
     def __init__(self) -> None:
         self._session: _S | None = None
         self._lock: Lock = Lock()
@@ -14,30 +24,36 @@ class AbstractSessionController(Generic[_S], ABC):
     @abstractmethod
     async def _create_session(self) -> _S:
         """
-        Create a new session instance.
+        Creates a new session instance.
         """
 
     @abstractmethod
     async def _validate_session(self) -> bool:
         """
-        Return True if session is still usable.
+        Returns True if session is still usable.
         """
 
     @abstractmethod
     async def _close_session(self) -> None:
         """
-        Gracefully close the session.
+        Gracefully closes the session.
         """
 
     @abstractmethod
     def _is_recoverable_error(self, error: Exception) -> bool:
         """
-        Return True if error means session should be recreated.
+        Returns True if a given error means session should be recreated.
         """
 
     @asynccontextmanager
     async def session(self) -> AsyncIterator[_S]:
+        """
+        Yields a stored session instance. Invalidates if session has closed or crashed.
+        :return: Session instance.
+        """
+
         session: _S = await self._ensure_session()
+
         try:
             yield session
         except Exception as exc:
@@ -46,13 +62,15 @@ class AbstractSessionController(Generic[_S], ABC):
             raise
 
     async def _ensure_session(self) -> _S:
+        """
+        Returns stored session instance. Creates a new one if a previous session was invalidated.
+        :return: Session instance.
+        """
+
         if self._session is not None and await self._validate_session():
             return self._session
 
         async with self._lock:
-            if self._session is not None and await self._validate_session():
-                return self._session
-
             if self._session is not None:
                 try:
                     await self._close_session()
@@ -63,6 +81,10 @@ class AbstractSessionController(Generic[_S], ABC):
             return self._session
 
     async def _invalidate(self) -> None:
+        """
+        Invalidates the session instance.
+        """
+
         async with self._lock:
             if self._session is not None:
                 try:

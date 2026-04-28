@@ -7,12 +7,23 @@ from app.assets.controllers.session import AbstractSessionController
 
 
 class DatabaseController(AbstractSessionController[AsyncSession]):
+    """
+    Database session controller. Creates only one session per instance,
+    and yields it via async context manager.
+    """
+
     def __init__(
             self,
             *,
             engine: AsyncEngine,
             session_maker: async_sessionmaker[AsyncSession],
     ) -> None:
+        """
+        DatabaseController Constructor.
+        :param engine: SQLAlchemy database engine.
+        :param session_maker: SQLAlchemy session maker.
+        """
+
         super().__init__()
         self._engine: AsyncEngine = engine
         self._session_maker: async_sessionmaker[AsyncSession] = session_maker
@@ -35,11 +46,9 @@ class DatabaseController(AbstractSessionController[AsyncSession]):
             dsn: str
     ) -> Self:
         """
-        Create database instance from DSN string.
-
+        Creates DatabaseController instance from DSN string.
         :param dsn: Database DSN string.
-
-        :return: Database instance.
+        :return: DatabaseController instance.
         """
 
         engine: AsyncEngine = create_async_engine(

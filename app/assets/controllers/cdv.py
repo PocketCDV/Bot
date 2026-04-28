@@ -11,12 +11,22 @@ from app.bot.exceptions.invalid_session import InvalidSessionError
 
 
 class CDVController:
+    """
+    An abstraction above ClientController for interacting with WU API.
+    """
+
     def __init__(
             self,
             client: ClientController,
             *,
             ssl_context: SSLContext | None = None,
     ) -> None:
+        """
+        CDVController Constructor.
+        :param client: ClientController instance.
+        :param ssl_context: SSLContext.
+        """
+
         self._client: ClientController = client
         self._ssl_context: SSLContext | None = ssl_context
 
@@ -25,6 +35,13 @@ class CDVController:
             login: str,
             password: str,
     ) -> str | None:
+        """
+        Retrieves WU session ID using credentials. Must be validated using refresh method.
+        :param login: WU login (Email).
+        :param password: WU password.
+        :return: WU session ID.
+        """
+
         async with self._client.session() as client_session:
             async with client_session.post(
                 "/?login=1",
@@ -43,6 +60,12 @@ class CDVController:
             self,
             session_id: str,
     ) -> str | None:
+        """
+        Refreshes WU session ID and returns it. If session ID is invalid, returns None.
+        :param session_id: WU session ID to refresh.
+        :return: Refreshed session ID.
+        """
+
         async with self._client.session() as client_session:
             async with client_session.get(
                 f"/ajax.php",
@@ -64,6 +87,15 @@ class CDVController:
             start_date: date,
             end_date: date,
     ) -> Sequence[ClassEntry]:
+        """
+        Retrieves all user's class entries as a sorted sequence using WU session ID.
+        :param session_id: WU session ID.
+        :param start_date: Start date of all class entries.
+        :param end_date: End date of all class entries.
+        :return: Sequence of class entries.
+        :raises InvalidSessionError: If session ID is invalid.
+        """
+
         class_entries: List[ClassEntry] = []
 
         async with self._client.session() as client_session:

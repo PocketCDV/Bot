@@ -6,35 +6,61 @@ from pydantic import BaseModel
 
 
 class ClassRecord(BaseModel):
+    """
+    Contains all required information about a class for it to be displayed.
+    """
+
     title: str
+    """
+    Class title.
+    """
+
     start_time: datetime
+    """
+    Class start time.
+    """
+
     end_time: datetime
+    """
+    Class end time.
+    """
+
     room_name: str
+    """
+    Class room name. Could be 'N.102', 'R.201', etc.
+    """
 
     @classmethod
     def from_json(
             cls,
             data: Dict[str, Any],
     ) -> 'ClassRecord':
-        return cls(
-            title=data.get("title"),
-            start_time=datetime.fromisoformat(data.get("start_time")),
-            end_time=datetime.fromisoformat(data.get("end_time")),
-            room_name=data.get("room_name"),
-        )
+        """
+        Returns a ClassRecord object from JSON.
+        :param data: JSON data.
+        :return: ClassRecord object.
+        """
+
+        return cls.model_validate(data)
 
     def to_json(self) -> Dict[str, Any]:
-        return {
-            "title": self.title,
-            "start_time": self.start_time.isoformat(),
-            "end_time": self.end_time.isoformat(),
-            "room_name": self.room_name,
-        }
+        """
+        Converts the ClassRecord object to JSON.
+        :return: JSON data.
+        """
+
+        return self.model_dump(mode="json")
 
     def to_string(
             self,
             i18n: I18nContext,
     ) -> str:
+        """
+        Converts ClassRecord object to a string representation.
+        :param i18n: I18n context.
+        :return: String representation.
+        """
+
         return i18n.get(
             "schedule-class-entry.short",
             title=self.title,

@@ -1,5 +1,5 @@
 from datetime import date, datetime, timezone
-from typing import Sequence, Mapping, Tuple
+from typing import Sequence, Mapping, Set
 
 from sqlalchemy import select
 
@@ -13,11 +13,22 @@ from app.database.models import Room
 
 
 class ScheduleController:
+    """
+    An abstraction above CDVController and DatabaseController for retrieving
+    schedule information as organized records.
+    """
+
     def __init__(
             self,
             cdv: CDVController,
             database: DatabaseController,
     ) -> None:
+        """
+        ScheduleController Constructor.
+        :param cdv: CDVController instance.
+        :param database: DatabaseController instance.
+        """
+
         self._cdv: CDVController = cdv
         self._database: DatabaseController = database
 
@@ -25,6 +36,12 @@ class ScheduleController:
             self,
             session_id: str,
     ) -> ScheduleDayRecord:
+        """
+        Retrieves today's schedule for the home page. Returns a ScheduleDayRecord for the current date.
+        :param session_id: WU session ID.
+        :return: ScheduleDayRecord for the current date.
+        """
+
         schedule_date: date = datetime.now(timezone.utc).date()
 
         class_entries: Sequence[ClassEntry] = await self._cdv.get_schedule(
@@ -53,6 +70,14 @@ class ScheduleController:
             end_date: date,
             session_id: str,
     ) -> ScheduleRecord:
+        """
+        Retrieves a schedule for a specific range of dates. Returns a ScheduleRecord for the selected date range.
+        :param start_date: Start date for the schedule.
+        :param end_date: End date for the schedule.
+        :param session_id: WU session ID.
+        :return: ScheduleRecord for the selected date range.
+        """
+
         class_entries: Sequence[ClassEntry] = await self._cdv.get_schedule(
             session_id,
             start_date,
@@ -84,7 +109,14 @@ class ScheduleController:
             self,
             class_entries: Sequence[ClassEntry],
     ) -> Mapping[int, str]:
-        room_ids: Tuple[int] = tuple(dict.fromkeys(class_entry.room for class_entry in class_entries))
+        """
+        Fetches room names from database using all room IDs from a sequence of class entries,
+        and creates a mapping of existent room ID, and it's name.
+        :param class_entries: Sequence of class entries.
+        :return: Mapping of room IDs to room names.
+        """
+
+        room_ids: Set[int] = {class_entry.room for class_entry in class_entries}
 
         async with self._database.session() as database_session:
             return {

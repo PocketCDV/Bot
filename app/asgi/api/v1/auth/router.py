@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.requests import Request
 
+from app.asgi import logger
 from app.asgi.api.v1.auth.models import LoginModel
 from app.asgi.api.v1.exceptions.invalid_credentials import InvalidCredentialsError
 from app.asgi.api.v1.exceptions.invalid_telegram_init_data import InvalidTelegramInitDataError
@@ -36,6 +37,7 @@ auth_router: APIRouter = APIRouter(prefix="/auth", tags=["Auth"])
 @auth_router.post(
     "/login",
     status_code=status.HTTP_204_NO_CONTENT,
+    name="Login via WU Credentials."
 )
 @limiter.limit("5/minute")
 async def login(
@@ -46,6 +48,26 @@ async def login(
         redis: Annotated[Redis, Depends(redis_dependency)],
         cdv: Annotated[CDVController, Depends(cdv_dependency)],
 ) -> None:
+    """
+    Login via WU login and password.
+
+    Validates Telegram Init Data, retrieves user's session ID using WU Credentials.
+
+    After successful retrieval - inserts new user in database if not present, updates session ID in bot cache,
+    and creates a celery task which modifies user's message to inform about successful login.
+
+    :param request: Request object (Used by rate limiter).
+    :param login_model: WU Credentials model.
+    :param config: Config dependency.
+    :param database_session: Database session dependency.
+    :param redis: Redis dependency.
+    :param cdv: CDV Controller dependency.
+
+    :raises InvalidCredentialsError: If invalid WU Credentials are provided.
+    :raises InvalidTelegramInitDataError: If invalid Telegram Init Data is provided.
+    :raises ServerUnavailableError: If WU Server is unavailable.
+    """
+
     try:
         telegram_init_data: WebAppInitData = safe_parse_webapp_init_data(
             token=config.telegram_bot_token.get_secret_value(),
@@ -59,8 +81,12 @@ async def login(
 
         if session_id is None or (await cdv.refresh_session_id(session_id)) is None:
             raise InvalidCredentialsError("Invalid credentials")
+
+        logger.info(
+            f"User {telegram_init_data.user.id} logged in successfully."
+        )
     except ClientConnectionError | asyncio.TimeoutError:
-        raise ServerUnavailableError("CDV server is unavailable")
+        raise ServerUnavailableError("WU Server is unavailable")
 
     await database_session.execute(
         insert(User).values(

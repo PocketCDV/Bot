@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from ssl import create_default_context
 
+from aiogram import Bot
 from certifi import where
 from fastapi import FastAPI
 from pydantic import ValidationError
@@ -14,27 +15,41 @@ from starlette.responses import JSONResponse
 
 from app.asgi.api.router import api_router
 from app.asgi.limiter import limiter
-from app.asgi.logging import logger
-from app.assets.controllers.api import APIController
-from app.database.database import Database
+from app.asgi.logger import logger
+from app.assets.controllers.cdv import CDVController
+from app.assets.controllers.client import ClientController
+from app.assets.controllers.database import DatabaseController
 from config import config
 
 
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
-    database = Database.from_dsn(config.database_dsn.get_secret_value())
-    redis = Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True)
+    database: DatabaseController = DatabaseController.from_dsn(
+        config.database_dsn.get_secret_value(),
+    )
+    redis: Redis = Redis.from_url(
+        config.redis_dsn.get_secret_value(),
+        decode_responses=True,
+    )
+    client: ClientController = ClientController(
+        base_url="https://wu.cdv.pl",
+    )
+    cdv: CDVController = CDVController(
+        client,
+        ssl_context=create_default_context(cafile=where()),
+    )
+    bot: Bot = Bot(token=config.telegram_bot_token.get_secret_value())
 
     fastapi_app.state.config = config
     fastapi_app.state.database = database
     fastapi_app.state.redis = redis
-    fastapi_app.state.api_controller = APIController(
-        "https://wu.cdv.pl",
-        ssl_context=create_default_context(cafile=where()),
-    )
+    fastapi_app.state.client = client
+    fastapi_app.state.cdv = cdv
+    fastapi_app.state.bot = bot
 
     yield
 
+    await database.close()
     await redis.close()
 
 app = FastAPI(title=config.TITLE, lifespan=lifespan)
@@ -43,7 +58,7 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
-    CORSMiddleware,
+    CORSMiddleware,  # type: ignore
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],

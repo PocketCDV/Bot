@@ -10,6 +10,14 @@ def get_state(
         bot: Bot,
         telegram_id: int,
 ) -> FSMContext:
+    """
+    Returns user FSMContext instance.
+    :param redis: Redis instance.
+    :param bot: Bot instance.
+    :param telegram_id: User's Telegram ID.
+    :return:
+    """
+
     return FSMContext(
         storage=RedisStorage(
             redis,

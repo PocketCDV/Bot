@@ -10,7 +10,7 @@ from aiogram_i18n.cores import FluentCompileCore
 from redis.asyncio import Redis
 
 from app.bot.actions.home import HomeAction
-from app.bot.middlewares.message_id import UserMessage
+from app.bot.middlewares.user_message import UserMessage
 from app.bot.utils import get_state
 from app.celery.worker import worker, config
 
@@ -19,6 +19,12 @@ async def __async_set_successful_login_message(
         telegram_id: int,
         locale: str,
 ) -> None:
+    """
+    Asynchronously modify user's message to say successful login info.
+    :param telegram_id: User's telegram ID.
+    :param locale: User's locale.
+    """
+
     bot: Bot = Bot(
         token=config.telegram_bot_token.get_secret_value(),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
@@ -39,7 +45,7 @@ async def __async_set_successful_login_message(
         _bot=bot,
     )
 
-    await user_message.edit_message(
+    await user_message.edit(
         core.get_translator(locale).format("login-success")[0],
         reply_markup=InlineKeyboardMarkup(
             inline_keyboard=[
@@ -66,6 +72,10 @@ def set_successful_login_message(
         telegram_id: int,
         locale: str,
 ) -> None:
+    """
+    Celery task for setting successful login message.
+    """
+
     if sys.platform == "win32":
         loop = asyncio.SelectorEventLoop()
         asyncio.set_event_loop(loop)

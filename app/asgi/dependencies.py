@@ -1,25 +1,58 @@
-from typing import AsyncGenerator
+from typing import AsyncIterator
 
+from aiogram import Bot
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
-from app.assets.controllers.api import APIController
+from app.assets.controllers.cdv import CDVController
 from config import Config
 
 
 async def config_dependency(request: Request) -> Config:
+    """
+    Config dependency.
+    """
+
     return request.app.state.config
 
 
-async def database_session_dependency(request: Request) -> AsyncGenerator[AsyncSession, None]:
-    async with request.app.state.database.session_maker() as database_session:
+async def database_session_dependency(request: Request) -> AsyncIterator[AsyncSession]:
+    """
+    Database session dependency.
+    """
+
+    async with request.app.state.database.session() as database_session:
         yield database_session
 
 
 async def redis_dependency(request: Request) -> Redis:
+    """
+    Redis dependency.
+    """
+
     return request.app.state.redis
 
 
-async def api_controller_dependency(request: Request) -> APIController:
-    return request.app.state.api_controller
+async def client_dependency(request: Request) -> CDVController:
+    """
+    API Client dependency.
+    """
+
+    return request.app.state.client
+
+
+async def cdv_dependency(request: Request) -> CDVController:
+    """
+    CDV Controller dependency.
+    """
+
+    return request.app.state.cdv
+
+
+async def bot_dependency(request: Request) -> Bot:
+    """
+    Bot dependency.
+    """
+
+    return request.app.state.bot

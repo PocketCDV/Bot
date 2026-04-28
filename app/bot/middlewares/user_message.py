@@ -6,22 +6,48 @@ from aiogram import BaseMiddleware, Bot
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import TelegramObject, User, InlineKeyboardMarkup, Message
+from aiogram_i18n import I18nContext
+
+from app.bot.keyboards.login import get_login_keyboard
 
 
 @dataclass
 class UserMessage:
+    """
+    Dataclass which represents a bot's message with which user is working.
+    Can be edited and replaced, and should be used instead of plain message.edit_text().
+    """
+
     user_id: int
+    """
+    User's telegram ID.
+    """
+
     message_id: int | None
+    """
+    Message ID.
+    """
 
     _bot: Bot
+    """
+    Bot instance for executing methods using instance attributes.
+    """
 
-    async def new_message(
+    async def new(
             self,
             text: str,
             *,
             reply_markup: InlineKeyboardMarkup | None = None,
             message_to_delete: int | None = None,
     ) -> None:
+        """
+        Replace a message with a new one.
+        :param text: Text of the message.
+        :param reply_markup: Reply markup.
+        :param message_to_delete: Message ID which should be deleted alongside with an old message,
+        usually a user's command.
+        """
+
         coroutines: List[Coroutine] = [
             self._bot.send_message(
                 chat_id=self.user_id,
@@ -49,13 +75,21 @@ class UserMessage:
 
         self.message_id = new_message.message_id
 
-    async def edit_message(
+    async def edit(
             self,
             text: str,
             *,
             reply_markup: InlineKeyboardMarkup | None = None,
             message_to_delete: int | None = None,
     ) -> None:
+        """
+        Edit a message. Replaces old one if fails.
+        :param text: Text of the message.
+        :param reply_markup: Reply markup.
+        :param message_to_delete: Message ID which should be deleted alongside with an old message,
+        if editing fails.
+        """
+
         try:
             if self.message_id is None:
                 raise ValueError
@@ -70,20 +104,60 @@ class UserMessage:
             if isinstance(error, TelegramBadRequest) and "message is not modified" in error.message:
                 return
 
-            await self.new_message(
+            await self.new(
                 text,
                 reply_markup=reply_markup,
                 message_to_delete=message_to_delete,
             )
 
+    async def new_login(
+            self,
+            i18n: I18nContext,
+            *,
+            message_to_delete: int | None = None,
+    ) -> None:
+        """
+        New message which says that user should log in.
+        :param i18n: I18n context.
+        :param message_to_delete: Message ID which should be deleted alongside with an old message.
+        """
 
-class MessageIdMiddleware(BaseMiddleware):
+        await self.new(
+            i18n.get("login"),
+            reply_markup=get_login_keyboard(i18n),
+            message_to_delete=message_to_delete,
+        )
+
+    async def edit_login(
+            self,
+            i18n: I18nContext,
+    ) -> None:
+        """
+        Edit message to make it say that user should log in.
+        :param i18n: I18n context.
+        """
+
+        await self.edit(
+            i18n.get("login"),
+            reply_markup=get_login_keyboard(i18n),
+        )
+
+
+class UserMessageMiddleware(BaseMiddleware):
+    """
+    Middleware which provides a UserMessage object on each user-related event.
+    """
+
     async def __call__(
             self,
             handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
             event: TelegramObject,
-            data: Dict[str, Any]
+            data: Dict[str, Any],
     ) -> Any:
+        """
+        Inserts UserMessage object in workflow data, and updates it after handler execution.
+        """
+
         from_user: User | None = data.get("event_from_user")
 
         if from_user is None:

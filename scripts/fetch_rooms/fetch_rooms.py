@@ -7,7 +7,7 @@ from aiohttp import ClientSession
 from certifi import where
 from sqlalchemy.dialects.postgresql import insert
 
-from app.database.database import Database
+from app.assets.controllers.database import DatabaseController
 from app.database.models import Room
 from config import config
 
@@ -19,6 +19,13 @@ async def fetch_room(
         session: ClientSession,
         room: int,
 ) -> str:
+    """
+    Fetches a single room name from WU.
+    :param session: WU session ID.
+    :param room: Room id.
+    :return: Room name.
+    """
+
     async with session.post(
             "https://wu.cdv.pl/ajax.php",
             params={"action": "get-classes-term-details-for-student"},
@@ -67,9 +74,11 @@ async def main() -> None:
 
                 filtered_rooms: dict[int, str] = {k: v for k, v in all_rooms.items() if v.lower() != "unknown room"}
 
-                database = Database.from_dsn(config.database_dsn.get_secret_value())
+                database: DatabaseController = DatabaseController.from_dsn(
+                    config.database_dsn.get_secret_value(),
+                )
 
-                async with database.session_maker() as database_session:
+                async with database.session() as database_session:
                     await database_session.execute(
                         insert(Room).values(
                             [

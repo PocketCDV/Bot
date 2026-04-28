@@ -7,4 +7,5 @@ with open("app/asgi/logging.json", "r", encoding="utf-8") as f:
     API_LOG_CONFIG: Dict[str, Any] = json.load(f)
 
 
+# Main Logger instance.
 logger: logging.Logger = logging.getLogger("pocketcdv_backend")

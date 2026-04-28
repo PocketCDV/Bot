@@ -10,31 +10,42 @@ from app.bot.actions.switch_scene import SwitchSceneAction
 
 
 class BaseScene(Scene, ABC, state="base"):
+    """
+    Base class for all scenes. Provides basic behaviour for back and switch scene callback actions.
+    """
+
     async def on_back(
             self,
-            **kwargs
+            **kwargs,
     ) -> None:
+        """
+        Base method for returning to the previous scene.
+        """
+
         await self.wizard.back(**kwargs)
 
     async def on_switch_scene(
             self,
             callback_data: SwitchSceneAction,
-            **kwargs
+            **kwargs,
     ) -> None:
-        await self.wizard.goto(callback_data.scene, **kwargs)
+        """
+        Base method for proceeding to a new scene.
+        :param callback_data: SwitchSceneAction data.
+        """
 
-    async def on_scene_leave(
-            self,
-            **kwargs
-    ) -> None:
-        pass
+        await self.wizard.goto(callback_data.scene, **kwargs)
 
     @on.callback_query(BackAction.filter())
     async def __on_back(
             self,
             callback_query: CallbackQuery,
-            **kwargs
+            **kwargs,
     ) -> None:
+        """
+        Telegram handler for BackAction.
+        """
+
         if await self.wizard.state.get_state() != "start":
             await self._prepare_coroutine(
                 self.on_back,
@@ -46,22 +57,15 @@ class BaseScene(Scene, ABC, state="base"):
             self,
             callback_query: CallbackQuery,
             callback_data: SwitchSceneAction,
-            **kwargs
+            **kwargs,
     ) -> None:
+        """
+        Telegram handler for SwitchSceneAction.
+        """
+
         await self._prepare_coroutine(
             self.on_switch_scene,
             callback_data=callback_data,
-            **kwargs
-        )
-
-    @on.callback_query.leave()
-    async def __on_scene_leave(
-            self,
-            callback_query: CallbackQuery,
-            **kwargs
-    ) -> None:
-        await self._prepare_coroutine(
-            self.on_scene_leave,
             **kwargs
         )
 
@@ -71,7 +75,7 @@ class BaseScene(Scene, ABC, state="base"):
             **kwargs
     ) -> Awaitable[None]:
         """
-        Create a coroutine and insert only available arguments to avoid exceptions.
+        Creates a coroutine and insert only available arguments to avoid exceptions.
 
         :param coroutine: Coroutine callable to create.
         :param kwargs: Additional arguments for passing to coroutine.

@@ -9,12 +9,20 @@ from app.database.models import User
 
 
 class UserMiddleware(BaseMiddleware):
+    """
+    Middleware which provides user object from database on every user-related event.
+    """
+
     async def __call__(
             self,
             handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
             event: TelegramObject,
             data: Dict[str, Any],
     ) -> Any:
+        """
+        Inserts database user object in workflow data.
+        """
+
         from_user: User | None = data.get("event_from_user")
 
         if from_user is None:

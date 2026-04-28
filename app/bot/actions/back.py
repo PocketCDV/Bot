@@ -1,5 +1,7 @@
-from app.bot.actions.base import BaseAction
+from app.bot.actions import BaseAction
 
 
 class BackAction(BaseAction, prefix="back"):
-    pass
+    """
+    Callback action for returning to the previous scene.
+    """

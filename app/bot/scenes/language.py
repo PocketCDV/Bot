@@ -1,16 +1,19 @@
 from aiogram.fsm.scene import on
-from aiogram.types import CallbackQuery, InlineKeyboardButton
-from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.types import CallbackQuery
 from aiogram_i18n import I18nContext
 
-from app.bot.actions.back import BackAction
 from app.bot.actions.switch_language import SwitchLanguageAction
-from app.bot.enums.locale import Locale
-from app.bot.middlewares.message_id import UserMessage
+from app.bot.keyboards.language import get_language_keyboard
+from app.bot.logger import logger
+from app.bot.middlewares.user_message import UserMessage
 from app.bot.scenes.base import BaseScene
 
 
 class LanguageScene(BaseScene, state="language"):
+    """
+    Scene for switching bot's language.
+    """
+
     @on.callback_query.enter()
     async def on_enter(
             self,
@@ -18,28 +21,15 @@ class LanguageScene(BaseScene, state="language"):
             user_message: UserMessage,
             i18n: I18nContext,
     ) -> None:
-        builder: InlineKeyboardBuilder = InlineKeyboardBuilder()
-
-        for locale in Locale:
-            builder.row(
-                InlineKeyboardButton(
-                    text=i18n.get("button-language", language=locale),
-                    callback_data=SwitchLanguageAction(locale=Locale(locale)).pack()
-                )
-            )
-
-        builder.row(
-            InlineKeyboardButton(
-                text=i18n.get("button-back"),
-                callback_data=BackAction().pack()
-            )
-        )
-
-        await user_message.edit_message(
+        await user_message.edit(
             i18n.get("language"),
-            reply_markup=builder.as_markup()
+            reply_markup=get_language_keyboard(i18n),
         )
         await callback_query.answer()
+
+        logger.info(
+            f"User {callback_query.from_user.id} opened the language select menu."
+        )
 
     @on.callback_query(SwitchLanguageAction.filter())
     async def on_switch_language(
@@ -49,27 +39,14 @@ class LanguageScene(BaseScene, state="language"):
             user_message: UserMessage,
             i18n: I18nContext,
     ) -> None:
-        await i18n.set_locale(callback_data.locale)
+        await i18n.set_locale(callback_data.language)
 
-        builder: InlineKeyboardBuilder = InlineKeyboardBuilder()
-
-        for locale in Locale:
-            builder.row(
-                InlineKeyboardButton(
-                    text=i18n.get("button-language", language=locale, locale=callback_data.locale),
-                    callback_data=SwitchLanguageAction(locale=Locale(locale)).pack()
-                )
-            )
-
-        builder.row(
-            InlineKeyboardButton(
-                text=i18n.get("button-back", locale=callback_data.locale),
-                callback_data=BackAction().pack()
-            )
-        )
-
-        await user_message.edit_message(
-            i18n.get("language", locale=callback_data.locale),
-            reply_markup=builder.as_markup()
+        await user_message.edit(
+            i18n.get("language", language=callback_data.language),
+            reply_markup=get_language_keyboard(i18n, locale=callback_data.language),
         )
         await callback_query.answer()
+
+        logger.info(
+            f"User {callback_query.from_user.id} set language to '{callback_data.language}'"
+        )

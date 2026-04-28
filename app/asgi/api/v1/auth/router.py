@@ -17,7 +17,7 @@ from app.asgi.api.v1.auth.models import LoginModel
 from app.asgi.dependencies import config_dependency, redis_dependency, api_controller_dependency, \
     database_session_dependency
 from app.asgi.limiter import limiter
-from app.assets.controllers.api import APIController
+from app.assets.controllers.cdv import CDVController
 from app.bot.utils import get_state
 from app.celery.tasks import set_successful_login_message
 from app.database.models import User
@@ -37,7 +37,7 @@ async def login(
         config: Annotated[Config, Depends(config_dependency)],
         database_session: Annotated[AsyncSession, Depends(database_session_dependency)],
         redis: Annotated[Redis, Depends(redis_dependency)],
-        api_controller: Annotated[APIController, Depends(api_controller_dependency)],
+        api_controller: Annotated[CDVController, Depends(api_controller_dependency)],
 ) -> None:
     try:
         telegram_init_data: WebAppInitData = safe_parse_webapp_init_data(

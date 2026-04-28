@@ -4,7 +4,7 @@ from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
 
-from app.assets.controllers.api import APIController
+from app.assets.controllers.cdv import CDVController
 from config import Config
 
 
@@ -21,5 +21,5 @@ async def redis_dependency(request: Request) -> Redis:
     return request.app.state.redis
 
 
-async def api_controller_dependency(request: Request) -> APIController:
+async def api_controller_dependency(request: Request) -> CDVController:
     return request.app.state.api_controller

@@ -10,7 +10,7 @@ from aiogram_i18n.cores import FluentCompileCore
 from certifi import where
 from redis.asyncio import Redis
 
-from app.assets.controllers.api import APIController
+from app.assets.controllers.cdv import CDVController
 from app.assets.controllers.database import DatabaseController
 from app.assets.controllers.schedule import ScheduleController
 from app.bot.managers.locale import LocaleManager
@@ -45,7 +45,7 @@ def create_dispatcher() -> Dispatcher:
 
     database: DatabaseController = DatabaseController.from_dsn(config.database_dsn.get_secret_value())
     redis: Redis = Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True)
-    api_controller = APIController(config.api_url, ssl_context=create_default_context(cafile=where()))
+    api_controller = CDVController(config.api_url, ssl_context=create_default_context(cafile=where()))
 
     dispatcher = Dispatcher(
         storage=RedisStorage(

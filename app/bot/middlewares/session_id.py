@@ -4,14 +4,14 @@ from aiogram import BaseMiddleware
 from aiogram.fsm.context import FSMContext
 from aiogram.types import TelegramObject, User
 
-from app.assets.controllers.api import APIController
+from app.assets.controllers.cdv import CDVController
 
 
 class SessionIDMiddleware(BaseMiddleware):
     def __init__(
             self,
             *,
-            api_controller: APIController,
+            api_controller: CDVController,
     ) -> None:
         self._api_controller = api_controller
 

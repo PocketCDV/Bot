@@ -2,19 +2,20 @@ from datetime import date
 from ssl import SSLContext
 from typing import Any, Dict, List, Sequence
 
-from aiohttp import ClientSession, ClientTimeout
+from aiohttp import ClientTimeout
 
+from app.assets.controllers.client import ClientController
 from app.assets.models.class_entry import ClassEntry
 
 
-class APIController:
+class CDVController:
     def __init__(
             self,
-            base_url: str,
+            client: ClientController,
             *,
             ssl_context: SSLContext | None = None,
     ) -> None:
-        self._base_url: str = base_url
+        self._client: ClientController = client
         self._ssl_context: SSLContext | None = ssl_context
 
     async def get_session_id(
@@ -22,9 +23,9 @@ class APIController:
             login: str,
             password: str,
     ) -> str | None:
-        async with ClientSession() as session:
-            async with session.post(
-                f"{self._base_url}/?login=1",
+        async with self._client.session() as client_session:
+            async with client_session.post(
+                "/?login=1",
                 data={
                     "login": login,
                     "password": password,
@@ -40,9 +41,9 @@ class APIController:
             self,
             session_id: str,
     ) -> str | None:
-        async with ClientSession() as session:
-            async with session.get(
-                f"{self._base_url}/ajax.php",
+        async with self._client.session() as client_session:
+            async with client_session.get(
+                f"/ajax.php",
                 params={"action": "get-translations"},
                 cookies={"WU_PHPSESSID": session_id},
                 ssl=self._ssl_context,
@@ -63,9 +64,9 @@ class APIController:
     ) -> Sequence[ClassEntry]:
         class_entries: List[ClassEntry] = []
 
-        async with ClientSession() as session:
-            async with session.post(
-                f"{self._base_url}/ajax.php",
+        async with self._client.session() as client_session:
+            async with client_session.post(
+                f"/ajax.php",
                 params={"action": "get-student-plan"},
                 data={
                     "poczatek": start_date.strftime("%Y-%m-%d"),

@@ -3,23 +3,23 @@ from typing import Sequence, Mapping, Tuple
 
 from sqlalchemy import select
 
-from app.assets.controllers.api import APIController
+from app.assets.controllers.cdv import CDVController
+from app.assets.controllers.database import DatabaseController
 from app.assets.models.class_entry import ClassEntry
 from app.assets.models.class_record import ClassRecord
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.assets.models.schedule_record import ScheduleRecord
-from app.assets.controllers.database import Database
 from app.database.models import Room
 
 
 class ScheduleController:
     def __init__(
             self,
-            database: Database,
-            api_controller: APIController,
+            cdv: CDVController,
+            database: DatabaseController,
     ) -> None:
-        self._database = database
-        self._api_controller = api_controller
+        self._cdv: CDVController = cdv
+        self._database: DatabaseController = database
 
     async def get_home_schedule(
             self,
@@ -27,7 +27,7 @@ class ScheduleController:
     ) -> ScheduleDayRecord:
         schedule_date: date = datetime.now(timezone.utc).date()
 
-        class_entries: Sequence[ClassEntry] = await self._api_controller.get_schedule(
+        class_entries: Sequence[ClassEntry] = await self._cdv.get_schedule(
             session_id,
             schedule_date,
             schedule_date,
@@ -53,7 +53,7 @@ class ScheduleController:
             end_date: date,
             session_id: str,
     ) -> ScheduleRecord:
-        class_entries: Sequence[ClassEntry] = await self._api_controller.get_schedule(
+        class_entries: Sequence[ClassEntry] = await self._cdv.get_schedule(
             session_id,
             start_date,
             end_date,
@@ -86,7 +86,7 @@ class ScheduleController:
     ) -> Mapping[int, str]:
         room_ids: Tuple[int] = tuple(dict.fromkeys(class_entry.room for class_entry in class_entries))
 
-        async with self._database.session_maker() as database_session:
+        async with self._database.session() as database_session:
             return {
                 row.id: row.name
                 for row in (

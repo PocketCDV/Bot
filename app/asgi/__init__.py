@@ -15,7 +15,7 @@ from starlette.responses import JSONResponse
 from app.asgi.api.router import api_router
 from app.asgi.limiter import limiter
 from app.asgi.logging import logger
-from app.assets.controllers.api import APIController
+from app.assets.controllers.cdv import CDVController
 from app.assets.controllers.database import DatabaseController
 from config import config
 
@@ -28,7 +28,7 @@ async def lifespan(fastapi_app: FastAPI):
     fastapi_app.state.config = config
     fastapi_app.state.database = database
     fastapi_app.state.redis = redis
-    fastapi_app.state.api_controller = APIController(
+    fastapi_app.state.api_controller = CDVController(
         "https://wu.cdv.pl",
         ssl_context=create_default_context(cafile=where()),
     )

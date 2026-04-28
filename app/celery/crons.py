@@ -16,7 +16,7 @@ from certifi import where
 from redis.asyncio import Redis
 from sqlalchemy import select
 
-from app.assets.controllers.api import APIController
+from app.assets.controllers.cdv import CDVController
 from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.bot.actions.switch_scene import SwitchSceneAction
@@ -34,7 +34,7 @@ async def __async_session_refresh() -> None:
 
     database = Database.from_dsn(config.database_dsn.get_secret_value())
     redis = Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True)
-    api_controller = APIController(config.api_url, ssl_context=create_default_context(cafile=where()))
+    api_controller = CDVController(config.api_url, ssl_context=create_default_context(cafile=where()))
 
     bot: Bot = Bot(
         token=config.telegram_bot_token.get_secret_value(),
@@ -69,7 +69,7 @@ async def __async_home_page_refresh() -> None:
     redis = Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True)
     schedule_controller: ScheduleController = ScheduleController(
         database,
-        APIController(config.api_url, ssl_context=create_default_context(cafile=where())),
+        CDVController(config.api_url, ssl_context=create_default_context(cafile=where())),
     )
 
     bot: Bot = Bot(

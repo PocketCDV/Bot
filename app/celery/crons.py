@@ -8,7 +8,6 @@ from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram_i18n import I18nContext
 from aiogram_i18n.cores import FluentCompileCore
 from aiogram_i18n.managers.memory import MemoryManager
@@ -20,9 +19,9 @@ from app.assets.controllers.cdv import CDVController
 from app.assets.controllers.database import DatabaseController
 from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_day_record import ScheduleDayRecord
-from app.bot.actions.switch_scene import SwitchSceneAction
 from app.bot.exceptions import BotError
 from app.bot.exceptions.invalid_session import InvalidSessionError
+from app.bot.keyboards.home import get_home_keyboard
 from app.bot.middlewares.message_id import UserMessage
 from app.bot.utils import get_state
 from app.celery.worker import worker, config
@@ -114,32 +113,15 @@ async def __async_home_page_refresh() -> None:
                 await state.get_value("message_id"),
                 _bot=bot,
             )
+            i18n: I18nContext = I18nContext(user.locale, core, MemoryManager(), {})
 
             try:
                 schedule: ScheduleDayRecord = await schedule.get_home_schedule(session_id)
             except InvalidSessionError:
-                continue  # TODO: Login page
+                await user_message.edit_login(i18n)
+                continue
             except BotError:
                 continue
-
-            i18n: I18nContext = I18nContext(user.locale, core, MemoryManager(), {})
-
-            reply_markup: InlineKeyboardMarkup = InlineKeyboardMarkup(
-                inline_keyboard=[
-                    [
-                        InlineKeyboardButton(
-                            text=i18n.get("button-view-schedule"),
-                            callback_data=SwitchSceneAction(scene="schedule").pack(),
-                        )
-                    ],
-                    [
-                        InlineKeyboardButton(
-                            text=i18n.get("button-lang"),
-                            callback_data=SwitchSceneAction(scene="language").pack(),
-                        )
-                    ],
-                ]
-            )
 
             time: datetime = datetime.now(tz=ZoneInfo("Europe/Warsaw"))
 
@@ -151,7 +133,7 @@ async def __async_home_page_refresh() -> None:
                         classes=schedule.to_string(i18n),
                         updated=time.strftime("%H:%M"),
                     ),
-                    reply_markup=reply_markup,
+                    reply_markup=get_home_keyboard(i18n),
                 )
             else:
                 await user_message.edit(
@@ -160,7 +142,7 @@ async def __async_home_page_refresh() -> None:
                         first_name=user.first_name,
                         updated=time.strftime("%H:%M"),
                     ),
-                    reply_markup=reply_markup,
+                    reply_markup=get_home_keyboard(i18n),
                 )
 
 

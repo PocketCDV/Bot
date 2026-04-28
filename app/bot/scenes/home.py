@@ -20,16 +20,16 @@ class HomeScene(BaseScene, state="home"):
             i18n: I18nContext,
             schedule_controller: ScheduleController,
     ) -> None:
-        if session_id is None:
-            await self.wizard.goto("login")
-            return
-
         try:
+            if session_id is None:
+                raise InvalidSessionError
+
             text, keyboard = await self._get_schedule_content(
                 message.from_user.first_name, session_id, i18n, schedule_controller
             )
         except InvalidSessionError:
-            await self.wizard.goto("login")
+            await user_message.new_login(i18n)
+            await self.wizard.exit()
             return
 
         await user_message.new(
@@ -47,13 +47,17 @@ class HomeScene(BaseScene, state="home"):
             i18n: I18nContext,
             schedule_controller: ScheduleController,
     ) -> None:
-        if session_id is None:
-            await self.wizard.goto("login")
-            return
+        try:
+            if session_id is None:
+                raise InvalidSessionError
 
-        text, keyboard = await self._get_schedule_content(
-            callback_query.from_user.first_name, session_id, i18n, schedule_controller
-        )
+            text, keyboard = await self._get_schedule_content(
+                callback_query.from_user.first_name, session_id, i18n, schedule_controller
+            )
+        except InvalidSessionError:
+            await user_message.edit_login(i18n)
+            await self.wizard.exit()
+            return
 
         await user_message.edit(
             text,

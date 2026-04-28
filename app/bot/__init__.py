@@ -23,7 +23,6 @@ from app.bot.routes.home import home_router
 from app.bot.routes.start import start_router
 from app.bot.scenes.home import HomeScene
 from app.bot.scenes.language import LanguageScene
-from app.bot.scenes.login import LoginScene
 from app.bot.scenes.schedule import ScheduleScene
 from app.bot.scenes.start import StartScene
 from config import config
@@ -103,7 +102,6 @@ def create_dispatcher() -> Dispatcher:
     SceneRegistry(dispatcher).add(
         StartScene,
         HomeScene,
-        LoginScene,
         ScheduleScene,
         LanguageScene,
     )

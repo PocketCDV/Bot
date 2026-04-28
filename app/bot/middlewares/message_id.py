@@ -6,6 +6,9 @@ from aiogram import BaseMiddleware, Bot
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import TelegramObject, User, InlineKeyboardMarkup, Message
+from aiogram_i18n import I18nContext
+
+from app.bot.keyboards.login import get_login_keyboard
 
 
 @dataclass
@@ -75,6 +78,27 @@ class UserMessage:
                 reply_markup=reply_markup,
                 message_to_delete=message_to_delete,
             )
+
+    async def new_login(
+            self,
+            i18n: I18nContext,
+            *,
+            message_to_delete: int | None = None,
+    ) -> None:
+        await self.new(
+            i18n.get("login"),
+            reply_markup=get_login_keyboard(i18n),
+            message_to_delete=message_to_delete,
+        )
+
+    async def edit_login(
+            self,
+            i18n: I18nContext,
+    ) -> None:
+        await self.edit(
+            i18n.get("login"),
+            reply_markup=get_login_keyboard(i18n),
+        )
 
 
 class MessageIdMiddleware(BaseMiddleware):

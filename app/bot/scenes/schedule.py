@@ -40,7 +40,8 @@ class ScheduleScene(BaseScene, state="schedule"):
                 session_id,
             )
         except InvalidSessionError:
-            await self.wizard.goto("login")
+            await user_message.edit_login(i18n)
+            await self.wizard.exit()
             return
 
         await self._render_schedule(schedule_date, schedule, user_message, i18n)
@@ -82,7 +83,8 @@ class ScheduleScene(BaseScene, state="schedule"):
                 fetched_start = min(fetched_start, start_date)
                 fetched_end = max(fetched_end, end_date)
         except InvalidSessionError:
-            await self.wizard.goto("login")
+            await user_message.edit_login(i18n)
+            await self.wizard.exit()
             return
 
         await self._render_schedule(schedule_date, schedule, user_message, i18n)

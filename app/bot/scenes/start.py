@@ -1,6 +1,3 @@
-import asyncio
-
-from aiogram import Bot
 from aiogram.fsm.scene import on
 from aiogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, WebAppInfo
 from aiogram_i18n import I18nContext
@@ -22,7 +19,6 @@ class StartScene(BaseScene, state="start"):
     async def on_enter(
             self,
             message: Message,
-            bot: Bot,
             user: User,
             user_message: UserMessage,
             i18n: I18nContext,
@@ -31,28 +27,22 @@ class StartScene(BaseScene, state="start"):
             await self.wizard.goto("home")
             return
 
-        await asyncio.gather(
-            user_message.new(
-                i18n.get(
-                    "greeting",
-                    first_name=message.from_user.first_name,
-                ),
-                reply_markup=InlineKeyboardMarkup(
-                    inline_keyboard=[
-                        [
-                            InlineKeyboardButton(
-                                text=i18n.get("button-proceed"),
-                                callback_data=ProceedAction().pack(),
-                            )
-                        ]
+        await user_message.new(
+            i18n.get(
+                "greeting",
+                first_name=message.from_user.first_name,
+            ),
+            reply_markup=InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [
+                        InlineKeyboardButton(
+                            text=i18n.get("button-proceed"),
+                            callback_data=ProceedAction().pack(),
+                        )
                     ]
-                ),
+                ]
             ),
-            bot.delete_message(
-                message.chat.id,
-                message.message_id,
-            ),
-            return_exceptions=True,
+            message_to_delete=message.message_id,
         )
 
         logger.info(

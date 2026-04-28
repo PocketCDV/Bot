@@ -4,7 +4,7 @@ from aiogram_i18n import I18nContext
 
 from app.bot.actions.switch_language import SwitchLanguageAction
 from app.bot.keyboards.language import get_language_keyboard
-from app.bot.middlewares.message_id import UserMessage
+from app.bot.middlewares.user_message import UserMessage
 from app.bot.scenes.base import BaseScene
 
 

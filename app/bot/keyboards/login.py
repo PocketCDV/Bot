@@ -5,6 +5,12 @@ from config import config
 
 
 def get_login_keyboard(i18n: I18nContext) -> InlineKeyboardMarkup:
+    """
+    Inline keyboard for the login page.
+    :param i18n: I18n context.
+    :return: InlineKeyboardMarkup.
+    """
+
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [

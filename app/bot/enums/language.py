@@ -2,6 +2,10 @@ from enum import StrEnum
 
 
 class Language(StrEnum):
-    PL = "pl"
-    EN = "en"
-    RU = "ru"
+    """
+    Enum of all supported languages and their locales.
+    """
+
+    POLISH = "pl"
+    ENGLISH = "en"
+    RUSSIAN = "ru"

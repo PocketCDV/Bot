@@ -1,2 +1,4 @@
 class BotError(Exception):
-    pass
+    """
+    Base error class for all bot exceptions.
+    """

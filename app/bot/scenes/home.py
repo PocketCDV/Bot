@@ -6,7 +6,7 @@ from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.bot.exceptions.invalid_session import InvalidSessionError
 from app.bot.keyboards.home import get_home_keyboard
-from app.bot.middlewares.message_id import UserMessage
+from app.bot.middlewares.user_message import UserMessage
 from app.bot.scenes.base import BaseScene
 
 

@@ -11,7 +11,7 @@ from app.assets.models.schedule_record import ScheduleRecord
 from app.bot.actions.flip_page import FlipPageAction
 from app.bot.exceptions.invalid_session import InvalidSessionError
 from app.bot.keyboards.schedule import get_schedule_keyboard
-from app.bot.middlewares.message_id import UserMessage
+from app.bot.middlewares.user_message import UserMessage
 from app.bot.scenes.base import BaseScene
 
 

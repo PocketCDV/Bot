@@ -22,7 +22,7 @@ from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.bot.exceptions import BotError
 from app.bot.exceptions.invalid_session import InvalidSessionError
 from app.bot.keyboards.home import get_home_keyboard
-from app.bot.middlewares.message_id import UserMessage
+from app.bot.middlewares.user_message import UserMessage
 from app.bot.utils import get_state
 from app.celery.worker import worker, config
 from app.database.models import User

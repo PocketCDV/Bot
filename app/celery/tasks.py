@@ -10,7 +10,7 @@ from aiogram_i18n.cores import FluentCompileCore
 from redis.asyncio import Redis
 
 from app.bot.actions.home import HomeAction
-from app.bot.middlewares.message_id import UserMessage
+from app.bot.middlewares.user_message import UserMessage
 from app.bot.utils import get_state
 from app.celery.worker import worker, config
 

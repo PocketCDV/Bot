@@ -6,7 +6,7 @@ from app.bot.actions.proceed import ProceedAction
 from app.bot.keyboards.login import get_login_keyboard
 from app.bot.keyboards.start import get_start_keyboard
 from app.bot.logging import logger
-from app.bot.middlewares.message_id import UserMessage
+from app.bot.middlewares.user_message import UserMessage
 from app.bot.scenes.base import BaseScene
 from app.database.models import User
 

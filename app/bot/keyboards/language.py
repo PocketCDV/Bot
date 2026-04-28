@@ -7,7 +7,18 @@ from app.bot.actions.switch_language import SwitchLanguageAction
 from app.bot.enums.language import Language
 
 
-def get_language_keyboard(i18n: I18nContext, *, locale: Language | None = None) -> InlineKeyboardMarkup:
+def get_language_keyboard(
+        i18n: I18nContext,
+        *,
+        locale: Language | None = None,
+) -> InlineKeyboardMarkup:
+    """
+    Inline keyboard for the language select page.
+    :param i18n: I18n context.
+    :param locale: Locale to use when localizing response.
+    :return: InlineKeyboardMarkup.
+    """
+
     builder: InlineKeyboardBuilder = InlineKeyboardBuilder()
 
     for language in Language:

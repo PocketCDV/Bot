@@ -5,6 +5,12 @@ from app.bot.actions.proceed import ProceedAction
 
 
 def get_start_keyboard(i18n: I18nContext) -> InlineKeyboardMarkup:
+    """
+    Inline keyboard for the greeting page.
+    :param i18n: I18n context.
+    :return: InlineKeyboardMarkup.
+    """
+
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [

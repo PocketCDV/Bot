@@ -8,10 +8,19 @@ from app.assets.controllers.cdv import CDVController
 
 
 class SessionIDMiddleware(BaseMiddleware):
+    """
+    Middleware which refreshes user's session ID on every user-related event.
+    """
+
     def __init__(
             self,
             cdv: CDVController,
     ) -> None:
+        """
+        SessionIDMiddleware initializer.
+        :param cdv: CDVController instance.
+        """
+
         self._cdv: CDVController = cdv
 
     async def __call__(
@@ -20,6 +29,11 @@ class SessionIDMiddleware(BaseMiddleware):
             event: TelegramObject,
             data: Dict[str, Any],
     ) -> Any:
+        """
+        Validates and refreshes session ID on every request. If validation fails,
+        updates session ID with None.
+        """
+
         from_user: User | None = data.get("event_from_user")
 
         if from_user is None:

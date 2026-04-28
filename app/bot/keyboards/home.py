@@ -5,6 +5,12 @@ from app.bot.actions.switch_scene import SwitchSceneAction
 
 
 def get_home_keyboard(i18n: I18nContext) -> InlineKeyboardMarkup:
+    """
+    Inline keyboard for the home page.
+    :param i18n: I18n context.
+    :return: InlineKeyboardMarkup.
+    """
+
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [

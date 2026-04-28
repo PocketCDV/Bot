@@ -16,7 +16,7 @@ from app.assets.controllers.database import DatabaseController
 from app.assets.controllers.schedule import ScheduleController
 from app.bot.managers.locale import LocaleManager
 from app.bot.middlewares.database import DatabaseMiddleware
-from app.bot.middlewares.message_id import MessageIdMiddleware
+from app.bot.middlewares.user_message import UserMessageMiddleware
 from app.bot.middlewares.session_id import SessionIDMiddleware
 from app.bot.middlewares.user import UserMiddleware
 from app.bot.routes.home import home_router
@@ -81,7 +81,7 @@ def create_dispatcher() -> Dispatcher:
         DatabaseMiddleware(database),
         UserMiddleware(),
         SessionIDMiddleware(cdv),
-        MessageIdMiddleware(),
+        UserMessageMiddleware(),
     )
 
     I18nMiddleware(

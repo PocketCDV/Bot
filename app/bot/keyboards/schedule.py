@@ -6,6 +6,12 @@ from app.bot.actions.flip_page import FlipPageAction
 
 
 def get_schedule_keyboard(i18n: I18nContext) -> InlineKeyboardMarkup:
+    """
+    Inline keyboard for the daily schedule page.
+    :param i18n: I18n context.
+    :return: InlineKeyboardMarkup.
+    """
+
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [

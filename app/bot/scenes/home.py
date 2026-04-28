@@ -5,6 +5,7 @@ from aiogram_i18n import I18nContext
 from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.bot.actions.switch_scene import SwitchSceneAction
+from app.bot.exceptions.invalid_session import InvalidSessionError
 from app.bot.middlewares.message_id import UserMessage
 from app.bot.scenes.base import BaseScene
 
@@ -19,11 +20,14 @@ class HomeScene(BaseScene, state="home"):
             i18n: I18nContext,
             schedule_controller: ScheduleController,
     ) -> None:
-        if session_id is None:
+        try:
+            if session_id is None:
+                raise InvalidSessionError
+
+            schedule: ScheduleDayRecord = await schedule_controller.get_home_schedule(session_id)
+        except InvalidSessionError:
             await self.wizard.goto("login")
             return
-
-        schedule: ScheduleDayRecord = await schedule_controller.get_home_schedule(session_id)
 
         reply_markup: InlineKeyboardMarkup = InlineKeyboardMarkup(
             inline_keyboard=[

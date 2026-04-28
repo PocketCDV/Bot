@@ -10,6 +10,7 @@ from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_record import ScheduleRecord
 from app.bot.actions.back import BackAction
 from app.bot.actions.flip_page import FlipPageAction
+from app.bot.exceptions.invalid_session import InvalidSessionError
 from app.bot.middlewares.message_id import UserMessage
 from app.bot.scenes.base import BaseScene
 
@@ -26,18 +27,21 @@ class ScheduleScene(BaseScene, state="schedule"):
             schedule_controller: ScheduleController,
             initial_date: date | None = None,
     ) -> None:
-        if session_id is None:
+        try:
+            if session_id is None:
+                raise InvalidSessionError
+
+            schedule_date = initial_date or datetime.now(timezone.utc).date()
+            start_date, end_date = self._get_week_range_by_date(schedule_date)
+
+            schedule: ScheduleRecord = await schedule_controller.get_schedule(
+                start_date,
+                end_date,
+                session_id,
+            )
+        except InvalidSessionError:
             await self.wizard.goto("login")
             return
-
-        schedule_date = initial_date or datetime.now(timezone.utc).date()
-        start_date, end_date = self._get_week_range_by_date(schedule_date)
-
-        schedule: ScheduleRecord = await schedule_controller.get_schedule(
-            start_date,
-            end_date,
-            session_id,
-        )
 
         reply_markup: InlineKeyboardMarkup = InlineKeyboardMarkup(
             inline_keyboard=[

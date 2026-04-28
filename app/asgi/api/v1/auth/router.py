@@ -4,8 +4,8 @@ from typing import Annotated
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.web_app import safe_parse_webapp_init_data, WebAppInitData
-from aiohttp import ClientConnectionError, ClientConnectorCertificateError
-from fastapi import APIRouter, Depends, HTTPException
+from aiohttp import ClientConnectionError
+from fastapi import APIRouter, Depends
 from redis.asyncio import Redis
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
@@ -14,6 +14,9 @@ from starlette import status
 from starlette.requests import Request
 
 from app.asgi.api.v1.auth.models import LoginModel
+from app.asgi.api.v1.exceptions.invalid_credentials import InvalidCredentialsError
+from app.asgi.api.v1.exceptions.invalid_telegram_init_data import InvalidTelegramInitDataError
+from app.asgi.api.v1.exceptions.server_unavailable import ServerUnavailableError
 from app.asgi.dependencies import (
     config_dependency,
     redis_dependency,
@@ -49,36 +52,15 @@ async def login(
             init_data=login_model.telegram_init_data,
         )
     except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid Telegram init data",
-        )
+        raise InvalidTelegramInitDataError("Invalid Telegram init data")
 
     try:
         session_id: str = await cdv.get_session_id(login_model.login, login_model.password)
 
         if session_id is None or (await cdv.refresh_session_id(session_id)) is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid credentials",
-            )
-    except HTTPException:
-        raise
-    except ClientConnectorCertificateError:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="SSL error when connecting to WU server",
-        )
-    except ClientConnectionError:
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail="Could not reach WU server",
-        )
-    except asyncio.TimeoutError:
-        raise HTTPException(
-            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-            detail="Timed out",
-        )
+            raise InvalidCredentialsError("Invalid credentials")
+    except ClientConnectionError | asyncio.TimeoutError:
+        raise ServerUnavailableError("CDV server is unavailable")
 
     await database_session.execute(
         insert(User).values(

@@ -17,13 +17,13 @@ from redis.asyncio import Redis
 from sqlalchemy import select
 
 from app.assets.controllers.cdv import CDVController
+from app.assets.controllers.database import DatabaseController
 from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.bot.actions.switch_scene import SwitchSceneAction
 from app.bot.middlewares.message_id import UserMessage
 from app.bot.utils import get_state
 from app.celery.worker import worker, config
-from app.assets.controllers.database import Database
 from app.database.models import User
 
 
@@ -32,16 +32,23 @@ async def __async_session_refresh() -> None:
     Asynchronously refresh every user's session ID.
     """
 
-    database = Database.from_dsn(config.database_dsn.get_secret_value())
-    redis = Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True)
-    api_controller = CDVController(config.api_url, ssl_context=create_default_context(cafile=where()))
-
+    database: DatabaseController = DatabaseController.from_dsn(
+        config.database_dsn.get_secret_value(),
+    )
+    redis: Redis = Redis.from_url(
+        config.redis_dsn.get_secret_value(),
+        decode_responses=True,
+    )
+    cdv: CDVController = CDVController(
+        config.api_url,
+        ssl_context=create_default_context(cafile=where()),
+    )
     bot: Bot = Bot(
         token=config.telegram_bot_token.get_secret_value(),
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
 
-    async with database.session_maker() as database_session:
+    async with database.session() as database_session:
         user_telegram_ids = await database_session.stream_scalars(
             select(User.telegram_id)
         )
@@ -57,7 +64,7 @@ async def __async_session_refresh() -> None:
             if session_id is None:
                 continue
 
-            new_session_id: str = await api_controller.refresh_session_id(session_id)
+            new_session_id: str = await cdv.refresh_session_id(session_id)
             await state.update_data(session_id=new_session_id)
 
 
@@ -65,11 +72,20 @@ async def __async_home_page_refresh() -> None:
     core = FluentCompileCore(path="locales/{locale}")
     await core.startup()
 
-    database = Database.from_dsn(config.database_dsn.get_secret_value())
-    redis = Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True)
-    schedule_controller: ScheduleController = ScheduleController(
+    database: DatabaseController = DatabaseController.from_dsn(
+        config.database_dsn.get_secret_value(),
+    )
+    redis: Redis = Redis.from_url(
+        config.redis_dsn.get_secret_value(),
+        decode_responses=True,
+    )
+    cdv: CDVController = CDVController(
+        config.api_url,
+        ssl_context=create_default_context(cafile=where()),
+    )
+    schedule: ScheduleController = ScheduleController(
+        cdv,
         database,
-        CDVController(config.api_url, ssl_context=create_default_context(cafile=where())),
     )
 
     bot: Bot = Bot(
@@ -77,7 +93,7 @@ async def __async_home_page_refresh() -> None:
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
 
-    async with database.session_maker() as database_session:
+    async with database.session() as database_session:
         users = await database_session.stream_scalars(
             select(User)
         )
@@ -99,7 +115,7 @@ async def __async_home_page_refresh() -> None:
                 _bot=bot,
             )
 
-            schedule: ScheduleDayRecord = await schedule_controller.get_home_schedule(session_id)
+            schedule: ScheduleDayRecord = await schedule.get_home_schedule(session_id)
 
             i18n: I18nContext = I18nContext(user.locale, core, MemoryManager(), {})
 

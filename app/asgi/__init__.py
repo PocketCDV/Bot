@@ -16,22 +16,33 @@ from app.asgi.api.router import api_router
 from app.asgi.limiter import limiter
 from app.asgi.logging import logger
 from app.assets.controllers.cdv import CDVController
+from app.assets.controllers.client import ClientController
 from app.assets.controllers.database import DatabaseController
 from config import config
 
 
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
-    database: DatabaseController = DatabaseController.from_dsn(config.database_dsn.get_secret_value())
-    redis: Redis = Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True)
+    database: DatabaseController = DatabaseController.from_dsn(
+        config.database_dsn.get_secret_value(),
+    )
+    redis: Redis = Redis.from_url(
+        config.redis_dsn.get_secret_value(),
+        decode_responses=True,
+    )
+    client: ClientController = ClientController(
+        base_url="https://wu.cdv.pl",
+    )
+    cdv: CDVController = CDVController(
+        client,
+        ssl_context=create_default_context(cafile=where()),
+    )
 
     fastapi_app.state.config = config
     fastapi_app.state.database = database
     fastapi_app.state.redis = redis
-    fastapi_app.state.api_controller = CDVController(
-        "https://wu.cdv.pl",
-        ssl_context=create_default_context(cafile=where()),
-    )
+    fastapi_app.state.client = client
+    fastapi_app.state.cdv = cdv
 
     yield
 

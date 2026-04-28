@@ -11,6 +11,7 @@ from certifi import where
 from redis.asyncio import Redis
 
 from app.assets.controllers.cdv import CDVController
+from app.assets.controllers.client import ClientController
 from app.assets.controllers.database import DatabaseController
 from app.assets.controllers.schedule import ScheduleController
 from app.bot.managers.locale import LocaleManager
@@ -43,9 +44,24 @@ def create_dispatcher() -> Dispatcher:
     :return: Dispatcher instance.
     """
 
-    database: DatabaseController = DatabaseController.from_dsn(config.database_dsn.get_secret_value())
-    redis: Redis = Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True)
-    api_controller = CDVController(config.api_url, ssl_context=create_default_context(cafile=where()))
+    database: DatabaseController = DatabaseController.from_dsn(
+        config.database_dsn.get_secret_value(),
+    )
+    redis: Redis = Redis.from_url(
+        config.redis_dsn.get_secret_value(),
+        decode_responses=True,
+    )
+    client: ClientController = ClientController(
+        base_url="https://wu.cdv.pl",
+    )
+    cdv: CDVController = CDVController(
+        client,
+        ssl_context=create_default_context(cafile=where()),
+    )
+    schedule: ScheduleController = ScheduleController(
+        cdv,
+        database,
+    )
 
     dispatcher = Dispatcher(
         storage=RedisStorage(
@@ -56,18 +72,16 @@ def create_dispatcher() -> Dispatcher:
         config=config,
         database=database,
         redis=redis,
-        api_controller=api_controller,
-        schedule_controller=ScheduleController(
-            database,
-            api_controller
-        ),
+        client=client,
+        cdv=cdv,
+        schedule=schedule,
     )
 
     _register_middlewares(
         dispatcher,
         DatabaseMiddleware(database=database),
         UserMiddleware(),
-        SessionIDMiddleware(api_controller=api_controller),
+        SessionIDMiddleware(cdv=cdv),
         MessageIdMiddleware(),
     )
 
@@ -78,7 +92,7 @@ def create_dispatcher() -> Dispatcher:
         ),
         manager=LocaleManager(
             default_locale="en",
-        )
+        ),
     ).setup(dispatcher)
 
     dispatcher.include_routers(

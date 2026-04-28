@@ -49,7 +49,6 @@ class BaseScene(Scene, ABC, state="base"):
         if await self.wizard.state.get_state() != "start":
             await self._prepare_coroutine(
                 self.on_back,
-                callback_query=callback_query,
                 **kwargs
             )
 
@@ -66,7 +65,6 @@ class BaseScene(Scene, ABC, state="base"):
 
         await self._prepare_coroutine(
             self.on_switch_scene,
-            callback_query=callback_query,
             callback_data=callback_data,
             **kwargs
         )

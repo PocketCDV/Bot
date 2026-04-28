@@ -12,7 +12,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from starlette.requests import Request
 
-from app.asgi import logger
 from app.asgi.api.v1.auth.models import LoginModel
 from app.asgi.api.v1.exceptions.invalid_credentials import InvalidCredentialsError
 from app.asgi.api.v1.exceptions.invalid_telegram_init_data import InvalidTelegramInitDataError
@@ -24,6 +23,7 @@ from app.asgi.dependencies import (
     cdv_dependency, bot_dependency
 )
 from app.asgi.limiter import limiter
+from app.asgi.logger import logger
 from app.assets.controllers.cdv import CDVController
 from app.bot.utils import get_state
 from app.celery.tasks import set_successful_login_message

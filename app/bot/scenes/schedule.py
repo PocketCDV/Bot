@@ -6,6 +6,7 @@ from aiogram.fsm.scene import on
 from aiogram.types import CallbackQuery
 from aiogram_i18n import I18nContext
 
+from app.asgi.logger import logger
 from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_record import ScheduleRecord
 from app.bot.actions.flip_page import FlipPageAction
@@ -51,6 +52,10 @@ class ScheduleScene(BaseScene, state="schedule"):
         await self._render_schedule(schedule_date, schedule, user_message, i18n)
         await self._save_state(state, schedule_date, schedule, start_date, end_date)
         await callback_query.answer()
+
+        logger.info(
+            f"User {callback_query.from_user.id} opened daily schedule."
+        )
 
     @on.callback_query(FlipPageAction.filter())
     async def on_flip_page(

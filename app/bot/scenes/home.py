@@ -6,6 +6,7 @@ from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.bot.exceptions.invalid_session import InvalidSessionError
 from app.bot.keyboards.home import get_home_keyboard
+from app.bot.logger import logger
 from app.bot.middlewares.user_message import UserMessage
 from app.bot.scenes.base import BaseScene
 
@@ -42,6 +43,10 @@ class HomeScene(BaseScene, state="home"):
             message_to_delete=message.message_id,
         )
 
+        logger.info(
+            f"User {message.from_user.id} opened the home page."
+        )
+
     @on.callback_query.enter()
     async def on_callback_query_enter(
             self,
@@ -68,6 +73,10 @@ class HomeScene(BaseScene, state="home"):
             reply_markup=keyboard,
         )
         await callback_query.answer()
+
+        logger.info(
+            f"User {callback_query.from_user.id} opened the home page."
+        )
 
     @on.message()
     async def on_message(

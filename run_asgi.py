@@ -3,7 +3,7 @@ from asyncio import SelectorEventLoop
 
 import uvicorn.loops.asyncio
 
-from app.asgi.logging import API_LOG_CONFIG
+from app.asgi.logger import API_LOG_CONFIG
 
 if __name__ == "__main__":
     if sys.platform == "win32":

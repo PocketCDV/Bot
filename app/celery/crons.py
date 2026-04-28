@@ -16,6 +16,7 @@ from redis.asyncio import Redis
 from sqlalchemy import select
 
 from app.assets.controllers.cdv import CDVController
+from app.assets.controllers.client import ClientController
 from app.assets.controllers.database import DatabaseController
 from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_day_record import ScheduleDayRecord
@@ -40,8 +41,11 @@ async def __async_session_refresh() -> None:
         config.redis_dsn.get_secret_value(),
         decode_responses=True,
     )
+    client: ClientController = ClientController(
+        base_url="https://wu.cdv.pl",
+    )
     cdv: CDVController = CDVController(
-        config.api_url,
+        client,
         ssl_context=create_default_context(cafile=where()),
     )
     bot: Bot = Bot(
@@ -84,8 +88,11 @@ async def __async_home_page_refresh() -> None:
         config.redis_dsn.get_secret_value(),
         decode_responses=True,
     )
+    client: ClientController = ClientController(
+        base_url="https://wu.cdv.pl",
+    )
     cdv: CDVController = CDVController(
-        config.api_url,
+        client,
         ssl_context=create_default_context(cafile=where()),
     )
     schedule: ScheduleController = ScheduleController(
@@ -120,7 +127,7 @@ async def __async_home_page_refresh() -> None:
             i18n: I18nContext = I18nContext(user.locale, core, MemoryManager(), {})
 
             try:
-                schedule: ScheduleDayRecord = await schedule.get_home_schedule(session_id)
+                schedule_day: ScheduleDayRecord = await schedule.get_home_schedule(session_id)
             except InvalidSessionError:
                 await user_message.edit_login(i18n)
                 continue
@@ -129,12 +136,12 @@ async def __async_home_page_refresh() -> None:
 
             time: datetime = datetime.now(tz=ZoneInfo("Europe/Warsaw"))
 
-            if schedule.class_records:
+            if schedule_day.class_records:
                 await user_message.edit(
                     i18n.get(
                         "home-updated",
                         first_name=user.first_name,
-                        classes=schedule.to_string(i18n),
+                        classes=schedule_day.to_string(i18n),
                         updated=time.strftime("%H:%M"),
                     ),
                     reply_markup=get_home_keyboard(i18n),

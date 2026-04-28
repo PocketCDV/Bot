@@ -28,6 +28,9 @@ class DatabaseController(AbstractSessionController[AsyncSession]):
         self._engine: AsyncEngine = engine
         self._session_maker: async_sessionmaker[AsyncSession] = session_maker
 
+    async def close(self) -> None:
+        await self._engine.dispose()
+
     async def _create_session(self) -> AsyncSession:
         return self._session_maker()
 

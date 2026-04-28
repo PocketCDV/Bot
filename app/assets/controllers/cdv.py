@@ -54,7 +54,8 @@ class CDVController:
                 ssl=self._ssl_context,
                 timeout=ClientTimeout(total=10),
             ) as response:
-                return response.cookies.get("WU_PHPSESSID").value
+                cookie = response.cookies.get("WU_PHPSESSID")
+                return cookie.value if cookie else None
 
     async def refresh_session_id(
             self,
@@ -75,10 +76,11 @@ class CDVController:
             ) as response:
                 try:
                     if response.status == 200 and not int((await response.json())["error_code"]):
-                        return response.cookies.get("WU_PHPSESSID").value
+                        cookie = response.cookies.get("WU_PHPSESSID")
+                        return cookie.value if cookie else None
                     else:
                         return None
-                except TypeError | ValueError:
+                except (TypeError, ValueError):
                     return None
 
     async def get_schedule(

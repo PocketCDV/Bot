@@ -71,6 +71,9 @@ class AbstractSessionController(Generic[_S], ABC):
             return self._session
 
         async with self._lock:
+            if self._session is not None and await self._validate_session():
+                return self._session
+
             if self._session is not None:
                 try:
                     await self._close_session()

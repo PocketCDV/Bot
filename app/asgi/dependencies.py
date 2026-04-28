@@ -1,5 +1,6 @@
 from typing import AsyncIterator
 
+from aiogram import Bot
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.requests import Request
@@ -47,3 +48,11 @@ async def cdv_dependency(request: Request) -> CDVController:
     """
 
     return request.app.state.cdv
+
+
+async def bot_dependency(request: Request) -> Bot:
+    """
+    Bot dependency.
+    """
+
+    return request.app.state.bot

@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from ssl import create_default_context
 
+from aiogram import Bot
 from certifi import where
 from fastapi import FastAPI
 from pydantic import ValidationError
@@ -37,15 +38,18 @@ async def lifespan(fastapi_app: FastAPI):
         client,
         ssl_context=create_default_context(cafile=where()),
     )
+    bot: Bot = Bot(token=config.telegram_bot_token.get_secret_value())
 
     fastapi_app.state.config = config
     fastapi_app.state.database = database
     fastapi_app.state.redis = redis
     fastapi_app.state.client = client
     fastapi_app.state.cdv = cdv
+    fastapi_app.state.bot = bot
 
     yield
 
+    await database.close()
     await redis.close()
 
 app = FastAPI(title=config.TITLE, lifespan=lifespan)
@@ -54,7 +58,7 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
-    CORSMiddleware,
+    CORSMiddleware,  # type: ignore
     allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],

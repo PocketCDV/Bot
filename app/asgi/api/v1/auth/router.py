@@ -7,7 +7,6 @@ from aiogram.utils.web_app import safe_parse_webapp_init_data, WebAppInitData
 from aiohttp import ClientConnectionError
 from fastapi import APIRouter, Depends
 from redis.asyncio import Redis
-from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -22,7 +21,7 @@ from app.asgi.dependencies import (
     config_dependency,
     redis_dependency,
     database_session_dependency,
-    cdv_dependency
+    cdv_dependency, bot_dependency
 )
 from app.asgi.limiter import limiter
 from app.assets.controllers.cdv import CDVController
@@ -37,7 +36,7 @@ auth_router: APIRouter = APIRouter(prefix="/auth", tags=["Auth"])
 @auth_router.post(
     "/login",
     status_code=status.HTTP_204_NO_CONTENT,
-    name="Login via WU Credentials."
+    name="Login via WU Credentials.",
 )
 @limiter.limit("5/minute")
 async def login(
@@ -47,6 +46,7 @@ async def login(
         database_session: Annotated[AsyncSession, Depends(database_session_dependency)],
         redis: Annotated[Redis, Depends(redis_dependency)],
         cdv: Annotated[CDVController, Depends(cdv_dependency)],
+        bot: Annotated[Bot, Depends(bot_dependency)],
 ) -> None:
     """
     Login via WU login and password.
@@ -62,6 +62,7 @@ async def login(
     :param database_session: Database session dependency.
     :param redis: Redis dependency.
     :param cdv: CDV Controller dependency.
+    :param bot: Bot dependency.
 
     :raises InvalidCredentialsError: If invalid WU Credentials are provided.
     :raises InvalidTelegramInitDataError: If invalid Telegram Init Data is provided.
@@ -85,32 +86,32 @@ async def login(
         logger.info(
             f"User {telegram_init_data.user.id} logged in successfully."
         )
-    except ClientConnectionError | asyncio.TimeoutError:
+    except (ClientConnectionError, asyncio.TimeoutError):
         raise ServerUnavailableError("WU Server is unavailable")
 
-    await database_session.execute(
-        insert(User).values(
+    upsert = (
+        insert(User)
+        .values(
             telegram_id=telegram_init_data.user.id,
             first_name=telegram_init_data.user.first_name,
             locale=telegram_init_data.user.language_code,
-        ).on_conflict_do_nothing(index_elements=["telegram_id"])
+        )
+        .on_conflict_do_update(
+            index_elements=["telegram_id"],
+            set_={
+                "first_name": telegram_init_data.user.first_name,
+                "locale": telegram_init_data.user.language_code,
+            },
+        )
+        .returning(User.telegram_id, User.locale)
     )
+    telegram_id, locale = (await database_session.execute(upsert)).one()
     await database_session.commit()
 
-    user: User | None = await database_session.scalar(
-        select(User)
-        .filter_by(telegram_id=telegram_init_data.user.id).limit(1)
-    )
-
-    state: FSMContext = get_state(
-        redis,
-        Bot(token=config.telegram_bot_token.get_secret_value()),
-        user.telegram_id,
-    )
+    state: FSMContext = get_state(redis, bot, telegram_id)
     await state.update_data(session_id=session_id)
 
-    await asyncio.to_thread(
-        set_successful_login_message.delay,
-        telegram_id=user.telegram_id,
-        locale=user.locale,
+    set_successful_login_message.delay(
+        telegram_id=telegram_id,
+        locale=locale,
     )

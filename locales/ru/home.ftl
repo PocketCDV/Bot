@@ -7,14 +7,14 @@ home-no-classes = 👋 <b>Добро пожаловать, { $first_name }.</b>
 
     💤 Сегодня занятий нет — ваша кровать давно этого ждала.
 
-home = 👋 <b>Добро пожаловать, { $first_name }.</b>
+home-updated = 👋 <b>Добро пожаловать, { $first_name }.</b>
     Вот ваши занятия на сегодня:
 
     { $classes }
 
     <b>Обновлено в { $updated }.</b>
 
-home-no-classes = 👋 <b>Добро пожаловать, { $first_name }.</b>
+home-no-classes-updated = 👋 <b>Добро пожаловать, { $first_name }.</b>
 
     💤 Сегодня занятий нет — ваша кровать давно этого ждала.
 

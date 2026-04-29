@@ -8,5 +8,16 @@ schedule-no-classes = 🗓 Расписание на <b>{ $weekday }, { $schedul
 
 schedule-class-entry =
     .short =
-        ⏳ <b>{ $start_time }-{ $end_time } | { $room }</b>
-        <i>{ $title }</i>
+        ⏳ <b>{ $start_time } - { $end_time } | { $room }</b>
+        <i><a href="{ $detail }">{ $title }</a></i>
+    .detailed =
+        📋 <b>{ $title }</b>
+
+        📂 <b>Модуль:</b> { $module }
+        <b>Форма занятий:</b> { $form }
+
+        ⌛️ <b>Дата:</b> { $date }
+        <b>Продолжительность:</b> { $start_time } - { $end_time }
+
+        📍 <b>Аудитория:</b> { $room }
+        <b>Преподаватель:</b> { $teacher }

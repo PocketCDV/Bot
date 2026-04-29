@@ -1,5 +1,9 @@
+from aiogram import Bot
+from aiogram.filters import CommandStart, Command, CommandObject
 from aiogram.fsm.scene import on
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
+from aiogram.utils.deep_linking import create_start_link
+from aiogram.utils.payload import decode_payload
 from aiogram_i18n import I18nContext
 
 from app.assets.controllers.schedule import ScheduleController
@@ -22,6 +26,7 @@ class HomeScene(BaseScene, state="home"):
             message: Message,
             user_message: UserMessage,
             session_id: str,
+            bot: Bot,
             i18n: I18nContext,
             schedule_controller: ScheduleController,
     ) -> None:
@@ -30,7 +35,11 @@ class HomeScene(BaseScene, state="home"):
                 raise InvalidSessionError
 
             text, keyboard = await self._get_schedule_content(
-                message.from_user.first_name, session_id, i18n, schedule_controller
+                message.from_user.first_name,
+                session_id,
+                bot,
+                i18n,
+                schedule_controller,
             )
         except InvalidSessionError:
             await user_message.new_login(i18n)
@@ -53,6 +62,7 @@ class HomeScene(BaseScene, state="home"):
             callback_query: CallbackQuery,
             user_message: UserMessage,
             session_id: str,
+            bot: Bot,
             i18n: I18nContext,
             schedule_controller: ScheduleController,
     ) -> None:
@@ -61,7 +71,11 @@ class HomeScene(BaseScene, state="home"):
                 raise InvalidSessionError
 
             text, keyboard = await self._get_schedule_content(
-                callback_query.from_user.first_name, session_id, i18n, schedule_controller
+                callback_query.from_user.first_name,
+                session_id,
+                bot,
+                i18n,
+                schedule_controller,
             )
         except InvalidSessionError:
             await user_message.edit_login(i18n)
@@ -78,6 +92,16 @@ class HomeScene(BaseScene, state="home"):
             f"User {callback_query.from_user.id} opened the home page."
         )
 
+    @on.message(CommandStart(deep_link=True))
+    async def on_start(
+            self,
+            message: Message,
+            command: CommandObject,
+    ) -> None:
+        await message.delete()
+
+        print(decode_payload(command.args))
+
     @on.message()
     async def on_message(
             self,
@@ -89,6 +113,7 @@ class HomeScene(BaseScene, state="home"):
     async def _get_schedule_content(
             first_name: str,
             session_id: str,
+            bot: Bot,
             i18n: I18nContext,
             schedule_controller: ScheduleController,
     ) -> tuple[str, InlineKeyboardMarkup]:
@@ -96,6 +121,7 @@ class HomeScene(BaseScene, state="home"):
         Retrieve message text as string, and a reply markup.
         :param first_name: User's first name.
         :param session_id: WU session ID.
+        :param bot: Bot instance.
         :param i18n: I18n context.
         :param schedule_controller: ScheduleController instance.
         :return: Message text and a reply markup.
@@ -104,7 +130,7 @@ class HomeScene(BaseScene, state="home"):
         schedule: ScheduleDayRecord = await schedule_controller.get_home_schedule(session_id)
 
         if schedule.class_records:
-            text: str = i18n.get("home", first_name=first_name, classes=schedule.to_string(i18n))
+            text: str = i18n.get("home", first_name=first_name, classes=await schedule.to_string(bot, i18n))
         else:
             text: str = i18n.get("home-no-classes", first_name=first_name)
 

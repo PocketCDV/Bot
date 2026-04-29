@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from typing import List, Any, Dict
 
+from aiogram import Bot
 from aiogram_i18n import I18nContext
 from pydantic import BaseModel, Field
 
@@ -42,18 +43,20 @@ class ScheduleDayRecord(BaseModel):
             "class_records": [record.to_json() for record in self.class_records],
         }
 
-    def to_string(
+    async def to_string(
             self,
+            bot: Bot,
             i18n: I18nContext,
     ) -> str:
         """
         Converts ScheduleDayRecord object to a string representation.
+        :param bot: Bot instance.
         :param i18n: I18n context.
         :return: String representation.
         """
 
         return "\n\n".join(
-            [record.to_string(i18n) for record in self.class_records]
+            [await record.to_string(bot, i18n) for record in self.class_records]
         )
 
     def get_active_meeting(

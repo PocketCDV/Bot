@@ -1,6 +1,7 @@
 from datetime import date, datetime, timezone, timedelta
 from typing import Dict, Any, Tuple
 
+from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.scene import on
 from aiogram.types import CallbackQuery
@@ -28,6 +29,7 @@ class ScheduleScene(BaseScene, state="schedule"):
             state: FSMContext,
             user_message: UserMessage,
             session_id: str,
+            bot: Bot,
             i18n: I18nContext,
             schedule_controller: ScheduleController,
             initial_date: date | None = None,
@@ -49,7 +51,7 @@ class ScheduleScene(BaseScene, state="schedule"):
             await self.wizard.exit()
             return
 
-        await self._render_schedule(schedule_date, schedule, user_message, i18n)
+        await self._render_schedule(schedule_date, schedule, user_message, bot, i18n)
         await self._save_state(state, schedule_date, schedule, start_date, end_date)
         await callback_query.answer()
 
@@ -65,6 +67,7 @@ class ScheduleScene(BaseScene, state="schedule"):
             state: FSMContext,
             user_message: UserMessage,
             session_id: str,
+            bot: Bot,
             i18n: I18nContext,
             schedule_controller: ScheduleController,
     ) -> None:
@@ -96,7 +99,7 @@ class ScheduleScene(BaseScene, state="schedule"):
             await self.wizard.exit()
             return
 
-        await self._render_schedule(schedule_date, schedule, user_message, i18n)
+        await self._render_schedule(schedule_date, schedule, user_message, bot, i18n)
         await self._save_state(state, schedule_date, schedule, fetched_start, fetched_end)
         await callback_query.answer()
 
@@ -111,6 +114,7 @@ class ScheduleScene(BaseScene, state="schedule"):
             schedule_date: date,
             schedule: ScheduleRecord,
             user_message: UserMessage,
+            bot: Bot,
             i18n: I18nContext,
     ) -> None:
         """
@@ -118,6 +122,7 @@ class ScheduleScene(BaseScene, state="schedule"):
         :param schedule_date: Current schedule data.
         :param schedule: ScheduleRecord instance.
         :param user_message: UserMessage instance.
+        :param bot: Bot instance.
         :param i18n: I18n context.
         """
 
@@ -126,7 +131,7 @@ class ScheduleScene(BaseScene, state="schedule"):
                 "schedule",
                 weekday=i18n.get("weekday", weekday=schedule_date.weekday()),
                 schedule_date=schedule_date.strftime("%d.%m.%Y"),
-                schedule=schedule.to_string(schedule_date, i18n),
+                schedule=await schedule.to_string(schedule_date, bot, i18n),
             )
         else:
             text: str = i18n.get(

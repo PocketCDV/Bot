@@ -9,4 +9,4 @@ schedule-no-classes = 🗓 Schedule for <b>{ $weekday }, { $schedule_date }</b>:
 schedule-class-entry =
     .short =
         ⏳ <b>{ $start_time }-{ $end_time } | { $room }</b>
-        <i>{ $title }</i>
+        <i><a href="{ $detail }">{ $title }</a></i>

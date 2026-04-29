@@ -17,7 +17,7 @@ button-lang = 🌎 Язык
 button-language = { $language ->
     [pl] 🇵🇱 Польский (Polska)
     *[en] 🇬🇧 Английский (English)
-    [ru] 🇷🇺 Русский ✅
+    [ru] 🇷🇺 Русский
     [uk] 🇺🇦 Украинский (Українська)
     [kk] 👻 Пасхалко ✅
 }

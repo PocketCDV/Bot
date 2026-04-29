@@ -9,6 +9,11 @@ class ClassEntry(BaseModel):
     WU Model of a class entry, contains everything WU provides about each class.
     """
 
+    term_id: int
+    """
+    Class ID.
+    """
+
     title: str
     """
     Class title.
@@ -39,12 +44,12 @@ class ClassEntry(BaseModel):
     End time of the class.
     """
 
-    room: int
+    room_id: int
     """
     Class room ID.
     """
 
-    teachers: int
+    teacher_id: int
     """
     Teacher ID.
     """
@@ -66,14 +71,15 @@ class ClassEntry(BaseModel):
         """
 
         return cls(
+            term_id=data.get("term_id"),
             title=data.get("title"),
             module=data.get("module"),
             form=data.get("form"),
             status=data.get("status"),
             start_time=data.get("start"),
             end_time=data.get("end"),
-            room=data.get("room"),
-            teachers=data.get("teachers"),
+            room_id=data.get("room"),
+            teacher_id=data.get("teachers"),
             hangout_link=data.get("hangoutLink").replace("\\/", "/") if data.get("hangoutLink") else None,
         )
 

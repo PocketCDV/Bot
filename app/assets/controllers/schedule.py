@@ -58,7 +58,7 @@ class ScheduleController:
                     title=class_entry.title,
                     start_time=class_entry.start_time,
                     end_time=class_entry.end_time,
-                    room_name=room_names.get(class_entry.room, "Unknown room"),
+                    room_name=room_names.get(class_entry.room_id, "Unknown room"),
                     online_meeting_url=class_entry.hangout_link,
                 )
                 for class_entry in class_entries
@@ -100,7 +100,7 @@ class ScheduleController:
                     title=class_entry.title,
                     start_time=class_entry.start_time,
                     end_time=class_entry.end_time,
-                    room_name=room_names.get(class_entry.room, "Unknown room"),
+                    room_name=room_names.get(class_entry.room_id, "Unknown room"),
                     online_meeting_url=class_entry.hangout_link,
                 )
             )
@@ -118,7 +118,7 @@ class ScheduleController:
         :return: Mapping of room IDs to room names.
         """
 
-        room_ids: Set[int] = {class_entry.room for class_entry in class_entries}
+        room_ids: Set[int] = {class_entry.room_id for class_entry in class_entries}
 
         async with self._database.session() as database_session:
             return {

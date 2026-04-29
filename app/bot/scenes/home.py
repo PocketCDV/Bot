@@ -1,13 +1,13 @@
 from aiogram import Bot
-from aiogram.filters import CommandStart, Command, CommandObject
+from aiogram.filters import CommandStart, CommandObject
 from aiogram.fsm.scene import on
 from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
-from aiogram.utils.deep_linking import create_start_link
 from aiogram.utils.payload import decode_payload
 from aiogram_i18n import I18nContext
 
 from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_day_record import ScheduleDayRecord
+from app.bot.enums.payload_action import PayloadAction
 from app.bot.exceptions.invalid_session import InvalidSessionError
 from app.bot.keyboards.home import get_home_keyboard
 from app.bot.logger import logger
@@ -100,7 +100,14 @@ class HomeScene(BaseScene, state="home"):
     ) -> None:
         await message.delete()
 
-        print(decode_payload(command.args))
+        payload: str = decode_payload(command.args)
+        action, data = payload.split(":")
+
+        if action != PayloadAction.DETAIL:
+            return
+
+        term_id: int = int(data)
+        print(term_id)
 
     @on.message()
     async def on_message(

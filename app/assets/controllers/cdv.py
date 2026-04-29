@@ -124,3 +124,39 @@ class CDVController:
         class_entries.sort(key=lambda entry: entry.start_time)
 
         return class_entries
+
+    async def get_teacher_full_name(
+            self,
+            session_id: str,
+            teacher_id: int,
+    ) -> str | None:
+        """
+        Retrieves teacher's full name using teacher's ID and WU session ID.
+        :param session_id: WU session ID.
+        :param teacher_id: Teacher ID.
+        :return: Teacher's full name, None if not found.
+        """
+
+        async with self._client.session() as client_session:
+            async with client_session.post(
+                    "https://wu.cdv.pl/ajax.php",
+                    params={"action": "get-classes-term-details-for-student"},
+                    data={
+                        "teacher_id": teacher_id,
+                        "term_id": 0,
+                        "room_id": 0,
+                        "group_id": 0,
+                    },
+                    cookies={"WU_PHPSESSID": session_id},
+                    ssl=self._ssl_context,
+            ) as response:
+                data: Dict[str, Any] = await response.json()
+
+        if not isinstance(data["error_code"], int) or data["error_code"]:
+            return
+
+        try:
+            teacher_data: Dict[str, Any] = data["return"]["teacher"][0]
+            return f"{teacher_data['first_name']} {teacher_data['last_name']}"
+        except (TypeError, ValueError, IndexError, KeyError):
+            return

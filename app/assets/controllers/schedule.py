@@ -1,5 +1,6 @@
+import asyncio
 from datetime import date, datetime, timezone
-from typing import Sequence, Mapping, Set
+from typing import Sequence, Mapping, Set, Dict
 
 from sqlalchemy import select
 
@@ -9,7 +10,7 @@ from app.assets.models.class_entry import ClassEntry
 from app.assets.models.class_record import ClassRecord
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.assets.models.schedule_record import ScheduleRecord
-from app.database.models import Room
+from app.database.models import Room, Teacher
 
 
 class ScheduleController:
@@ -51,16 +52,11 @@ class ScheduleController:
         )
 
         room_names: Mapping[int, str] = await self._fetch_room_names(class_entries)
+        teacher_names: Mapping[int, str] = await self._fetch_teacher_names(class_entries, session_id)
 
         return ScheduleDayRecord(
             class_records=[
-                ClassRecord(
-                    title=class_entry.title,
-                    start_time=class_entry.start_time,
-                    end_time=class_entry.end_time,
-                    room_name=room_names.get(class_entry.room_id, "Unknown room"),
-                    online_meeting_url=class_entry.hangout_link,
-                )
+                ClassRecord.from_entry(class_entry, room_names, teacher_names)
                 for class_entry in class_entries
             ]
         )
@@ -86,6 +82,7 @@ class ScheduleController:
         )
 
         room_names: Mapping[int, str] = await self._fetch_room_names(class_entries)
+        teacher_names: Mapping[int, str] = await self._fetch_teacher_names(class_entries, session_id)
 
         schedule: ScheduleRecord = ScheduleRecord()
 
@@ -96,13 +93,7 @@ class ScheduleController:
                 schedule.schedule[entry_date] = ScheduleDayRecord()
 
             schedule.schedule[entry_date].class_records.append(
-                ClassRecord(
-                    title=class_entry.title,
-                    start_time=class_entry.start_time,
-                    end_time=class_entry.end_time,
-                    room_name=room_names.get(class_entry.room_id, "Unknown room"),
-                    online_meeting_url=class_entry.hangout_link,
-                )
+                ClassRecord.from_entry(class_entry, room_names, teacher_names)
             )
 
         return schedule
@@ -130,3 +121,59 @@ class ScheduleController:
                     )
                 ).all()
             }
+
+    async def _fetch_teacher_names(
+            self,
+            class_entries: Sequence[ClassEntry],
+            session_id: str,
+    ) -> Mapping[int, str]:
+        """
+        Fetches teacher names from database using all teacher IDs from a sequence of class entries.
+        If a teacher is not found in the database, falls back to fetching from remote API.
+        Teachers that could not be fetched from either source are excluded from the mapping.
+        :param class_entries: Sequence of class entries.
+        :param session_id: WU session ID.
+        :return: Mapping of teacher IDs to teacher names.
+        """
+
+        teacher_ids: Set[int] = {class_entry.teacher_id for class_entry in class_entries}
+
+        async with self._database.session() as database_session:
+            rows = (
+                await database_session.execute(
+                    select(Teacher.id, Teacher.full_name)
+                    .filter(Teacher.id.in_(teacher_ids))
+                )
+            ).all()
+
+        result: Dict[int, str] = {row.id: row.full_name for row in rows}
+
+        missing_ids: Set[int] = teacher_ids - result.keys()
+
+        if missing_ids:
+            fetched: Sequence[str | None] = await asyncio.gather(
+                *[
+                    self._cdv.get_teacher_full_name(session_id, teacher_id)
+                    for teacher_id in missing_ids
+                ]
+            )
+
+            fetched_teachers: Dict[int, str] = {
+                teacher_id: full_name
+                for teacher_id, full_name in zip(missing_ids, fetched)
+                if full_name is not None
+            }
+
+            if fetched_teachers:
+                async with self._database.session() as database_session:
+                    database_session.add_all(
+                        [
+                            Teacher(id=teacher_id, full_name=full_name)
+                            for teacher_id, full_name in fetched_teachers.items()
+                        ]
+                    )
+                    await database_session.commit()
+
+            result.update(fetched_teachers)
+
+        return result

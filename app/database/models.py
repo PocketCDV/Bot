@@ -61,3 +61,21 @@ class Room(Base):
     """
     Room display name.
     """
+
+
+class Teacher(Base):
+    """
+    Database room object which represents CDV professor (Only ID and full name, no personal data).
+    """
+
+    __tablename__ = "teachers"
+
+    id = Column(Integer(), primary_key=True, nullable=False, index=True, autoincrement=False)
+    """
+    Teacher ID.
+    """
+
+    full_name = Column(String(64), nullable=False)
+    """
+    Teacher full name.
+    """

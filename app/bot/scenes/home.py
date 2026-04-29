@@ -108,4 +108,4 @@ class HomeScene(BaseScene, state="home"):
         else:
             text: str = i18n.get("home-no-classes", first_name=first_name)
 
-        return text, get_home_keyboard(i18n)
+        return text, get_home_keyboard(schedule, i18n)

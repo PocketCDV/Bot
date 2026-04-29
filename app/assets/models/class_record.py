@@ -30,6 +30,11 @@ class ClassRecord(BaseModel):
     Class room name. Could be 'N.102', 'R.201', etc.
     """
 
+    online_meeting_url: str | None = None
+    """
+    URL for an online meeting.
+    """
+
     @classmethod
     def from_json(
             cls,

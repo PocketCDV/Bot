@@ -58,7 +58,8 @@ class ScheduleController:
                     title=class_entry.title,
                     start_time=class_entry.start_time,
                     end_time=class_entry.end_time,
-                    room_name=room_names.get(class_entry.room, "Unknown room")
+                    room_name=room_names.get(class_entry.room, "Unknown room"),
+                    online_meeting_url=class_entry.hangout_link,
                 )
                 for class_entry in class_entries
             ]
@@ -100,6 +101,7 @@ class ScheduleController:
                     start_time=class_entry.start_time,
                     end_time=class_entry.end_time,
                     room_name=room_names.get(class_entry.room, "Unknown room"),
+                    online_meeting_url=class_entry.hangout_link,
                 )
             )
 

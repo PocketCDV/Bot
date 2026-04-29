@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import List, Any, Dict
 
 from aiogram_i18n import I18nContext
@@ -54,3 +55,21 @@ class ScheduleDayRecord(BaseModel):
         return "\n\n".join(
             [record.to_string(i18n) for record in self.class_records]
         )
+
+    def get_active_meeting(
+            self,
+            time: datetime,
+    ) -> ClassRecord | None:
+        """
+        Returns the class record with valid URL for the current or upcoming online meeting based on the given time.
+        Checks if the given time falls within the range of start_time - 30 minutes and end_time.
+
+        :param time: Current time.
+        :return: Online meeting or None if no active meeting found.
+        """
+
+        for record in self.class_records:
+            window_start: datetime = record.start_time - timedelta(minutes=30)
+
+            if record.online_meeting_url and window_start <= time <= record.end_time:
+                return record

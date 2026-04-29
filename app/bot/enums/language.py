@@ -10,4 +10,4 @@ class Language(StrEnum):
     ENGLISH = "en"
     RUSSIAN = "ru"
     UKRAINIAN = "uk"
-    JOKE = "jk"
+    JOKE = "kk"

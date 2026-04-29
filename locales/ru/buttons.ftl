@@ -19,7 +19,7 @@ button-language = { $language ->
     *[en] 🇬🇧 Английский (English)
     [ru] 🇷🇺 Русский ✅
     [uk] 🇺🇦 Украинский (Українська)
-    [jk] 👻 Пасхалко ✅
+    [kk] 👻 Пасхалко ✅
 }
 
 button-join-meeting = 📲 Подключиться к встрече

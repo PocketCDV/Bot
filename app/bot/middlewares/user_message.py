@@ -5,7 +5,7 @@ from typing import Callable, Any, Awaitable, Dict, Coroutine, List
 from aiogram import BaseMiddleware, Bot
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
-from aiogram.types import TelegramObject, User, InlineKeyboardMarkup, Message
+from aiogram.types import TelegramObject, User, InlineKeyboardMarkup, Message, LinkPreviewOptions
 from aiogram_i18n import I18nContext
 
 from app.bot.keyboards.login import get_login_keyboard
@@ -53,6 +53,7 @@ class UserMessage:
                 chat_id=self.user_id,
                 text=text,
                 reply_markup=reply_markup,
+                link_preview_options=LinkPreviewOptions(is_disabled=True),
             ),
             self._bot.delete_message(
                 self.user_id,
@@ -99,6 +100,7 @@ class UserMessage:
                 message_id=self.message_id,
                 text=text,
                 reply_markup=reply_markup,
+                link_preview_options=LinkPreviewOptions(is_disabled=True),
             )
         except (TelegramBadRequest, ValueError) as error:
             if isinstance(error, TelegramBadRequest) and "message is not modified" in error.message:

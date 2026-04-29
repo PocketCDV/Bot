@@ -25,6 +25,16 @@ class ClassRecord(BaseModel):
     Class title.
     """
 
+    module: str
+    """
+    Class module.
+    """
+
+    form: str
+    """
+    Class form, could be 'Laboratory', 'Lecture' etc.
+    """
+
     start_time: datetime
     """
     Class start time.
@@ -78,6 +88,8 @@ class ClassRecord(BaseModel):
         return cls(
             term_id=class_entry.term_id,
             title=class_entry.title,
+            module=class_entry.module,
+            form=class_entry.form,
             start_time=class_entry.start_time,
             end_time=class_entry.end_time,
             room_id=class_entry.room_id,

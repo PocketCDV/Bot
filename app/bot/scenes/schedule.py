@@ -2,15 +2,20 @@ from datetime import date, datetime, timezone, timedelta
 from typing import Dict, Any, Tuple
 
 from aiogram import Bot
+from aiogram.filters import CommandStart, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.scene import on
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
+from aiogram.utils.payload import decode_payload
 from aiogram_i18n import I18nContext
 
 from app.asgi.logger import logger
 from app.assets.controllers.schedule import ScheduleController
+from app.assets.models.class_record import ClassRecord
+from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.assets.models.schedule_record import ScheduleRecord
 from app.bot.actions.flip_page import FlipPageAction
+from app.bot.enums.payload_action import PayloadAction
 from app.bot.exceptions.invalid_session import InvalidSessionError
 from app.bot.keyboards.schedule import get_schedule_keyboard
 from app.bot.middlewares.user_message import UserMessage
@@ -38,26 +43,27 @@ class ScheduleScene(BaseScene, state="schedule"):
             if session_id is None:
                 raise InvalidSessionError
 
-            schedule_date = initial_date or datetime.now(timezone.utc).date()
-
+            schedule_date: date = initial_date or datetime.now(timezone.utc).date()
             start_date, end_date = self._get_week_range_by_date(schedule_date)
-            schedule: ScheduleRecord = await schedule_controller.get_schedule(
-                start_date,
-                end_date,
-                session_id,
-            )
+            schedule: ScheduleRecord = await schedule_controller.get_schedule(start_date, end_date, session_id)
         except InvalidSessionError:
             await user_message.edit_login(i18n)
             await self.wizard.exit()
             return
 
-        await self._render_schedule(schedule_date, schedule, user_message, bot, i18n)
-        await self._save_state(state, schedule_date, schedule, start_date, end_date)
+        await self._display_schedule_page(
+            schedule_date,
+            schedule,
+            start_date,
+            end_date,
+            user_message,
+            bot,
+            state,
+            i18n,
+        )
         await callback_query.answer()
 
-        logger.info(
-            f"User {callback_query.from_user.id} opened daily schedule."
-        )
+        logger.info(f"User {callback_query.from_user.id} opened daily schedule.")
 
     @on.callback_query(FlipPageAction.filter())
     async def on_flip_page(
@@ -76,53 +82,105 @@ class ScheduleScene(BaseScene, state="schedule"):
                 raise InvalidSessionError
 
             data: Dict[str, Any] = await state.get_data()
-
-            schedule_date: date = date.fromisoformat(data["schedule_date"]) + timedelta(days=callback_data.offset)
-            schedule: ScheduleRecord = ScheduleRecord.from_json(data["schedule"])
-            fetched_start: date = date.fromisoformat(data["fetched_start"])
-            fetched_end: date = date.fromisoformat(data["fetched_end"])
-
-            if not (fetched_start <= schedule_date <= fetched_end):
-                start_date, end_date = self._get_week_range_by_date(schedule_date)
-                new_schedule: ScheduleRecord = await schedule_controller.get_schedule(
-                    start_date,
-                    end_date,
-                    session_id,
-                )
-
-                schedule.schedule.update(new_schedule.schedule)
-
-                fetched_start = min(fetched_start, start_date)
-                fetched_end = max(fetched_end, end_date)
+            schedule_date, schedule, fetched_start, fetched_end = await self._resolve_flip_page(
+                data, callback_data.offset, session_id, schedule_controller
+            )
         except InvalidSessionError:
             await user_message.edit_login(i18n)
             await self.wizard.exit()
             return
 
-        await self._render_schedule(schedule_date, schedule, user_message, bot, i18n)
-        await self._save_state(state, schedule_date, schedule, fetched_start, fetched_end)
+        await self._display_schedule_page(
+            schedule_date,
+            schedule,
+            fetched_start,
+            fetched_end,
+            user_message,
+            bot,
+            state,
+            i18n,
+        )
         await callback_query.answer()
 
-    @staticmethod
-    def _get_week_range_by_date(d: date) -> Tuple[date, date]:
-        start: date = d - timedelta(days=d.weekday())
-        end: date = start + timedelta(days=6)
-        return start, end
+    @on.message(CommandStart(deep_link=True))
+    async def on_start(
+            self,
+            message: Message,
+            command: CommandObject,
+            state: FSMContext,
+    ) -> None:
+        await message.delete()
+
+        payload: str = decode_payload(command.args)
+        action, payload_data = payload.split(":")
+
+        if action != PayloadAction.DETAIL:
+            return
+
+        term_id: int = int(payload_data)
+
+        data: Dict[str, Any] = await state.get_data()
+
+        schedule_date: date = date.fromisoformat(data["schedule_date"])
+        schedule: ScheduleDayRecord | None = ScheduleRecord.from_json(data["schedule"]).schedule.get(schedule_date)
+        class_record: ClassRecord | None = None
+
+        for class_record in schedule.class_records:
+            if class_record.term_id == term_id:
+                class_record: ClassRecord = class_record
+                break
+
+        if class_record is None:
+            return
+
+        await self.wizard.goto("detail", class_record=class_record)
+
+    async def _resolve_flip_page(
+            self,
+            data: Dict[str, Any],
+            offset: int,
+            session_id: str,
+            schedule_controller: ScheduleController,
+    ) -> Tuple[date, ScheduleRecord, date, date]:
+        """
+        Resolves the new schedule date and fetches missing data if the new date is outside the cached range.
+        :return: Tuple of (schedule_date, schedule, fetched_start, fetched_end).
+        """
+
+        schedule_date: date = date.fromisoformat(data["schedule_date"]) + timedelta(days=offset)
+        schedule: ScheduleRecord = ScheduleRecord.from_json(data["schedule"])
+        fetched_start: date = date.fromisoformat(data["fetched_start"])
+        fetched_end: date = date.fromisoformat(data["fetched_end"])
+
+        if not (fetched_start <= schedule_date <= fetched_end):
+            start_date, end_date = self._get_week_range_by_date(schedule_date)
+            new_schedule: ScheduleRecord = await schedule_controller.get_schedule(start_date, end_date, session_id)
+            schedule.schedule.update(new_schedule.schedule)
+            fetched_start = min(fetched_start, start_date)
+            fetched_end = max(fetched_end, end_date)
+
+        return schedule_date, schedule, fetched_start, fetched_end
 
     @staticmethod
-    async def _render_schedule(
+    async def _display_schedule_page(
             schedule_date: date,
             schedule: ScheduleRecord,
+            fetched_start: date,
+            fetched_end: date,
             user_message: UserMessage,
             bot: Bot,
+            state: FSMContext,
             i18n: I18nContext,
     ) -> None:
         """
-        Display schedule using current schedule date, ScheduleRecord object and user message data.
-        :param schedule_date: Current schedule data.
+        Displays the schedule for the given date and saves state.
+        :param schedule_date: Date to display.
         :param schedule: ScheduleRecord instance.
+        :param fetched_start: Start of the cached date range.
+        :param fetched_end: End of the cached date range.
         :param user_message: UserMessage instance.
         :param bot: Bot instance.
+        :param state: FSMContext instance.
         :param i18n: I18n context.
         """
 
@@ -141,27 +199,15 @@ class ScheduleScene(BaseScene, state="schedule"):
             )
 
         await user_message.edit(text, reply_markup=get_schedule_keyboard(i18n))
-
-    @staticmethod
-    async def _save_state(
-            state: FSMContext,
-            schedule_date: date,
-            schedule: ScheduleRecord,
-            fetched_start: date,
-            fetched_end: date,
-    ) -> None:
-        """
-        Saves fetched state about all scheduled classes and visited date range.
-        :param state: FSMContext instance.
-        :param schedule_date: Current schedule data.
-        :param schedule: ScheduleRecord instance.
-        :param fetched_start: Start date of visited date range.
-        :param fetched_end: End date of visited date range.
-        """
-
         await state.update_data(
             schedule_date=schedule_date.isoformat(),
             schedule=schedule.to_json(),
             fetched_start=fetched_start.isoformat(),
             fetched_end=fetched_end.isoformat(),
         )
+
+    @staticmethod
+    def _get_week_range_by_date(d: date) -> Tuple[date, date]:
+        start: date = d - timedelta(days=d.weekday())
+        end: date = start + timedelta(days=6)
+        return start, end

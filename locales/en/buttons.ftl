@@ -20,4 +20,6 @@ button-language = { $language ->
     [ru] 🇷🇺 Russian (Русский)
 }
 
-button-join-meeting = 📲 Join { $meeting }
+button-join-meeting = 📲 Join Meeting
+
+button-join-meeting-named = 📲 Join { $meeting }

@@ -28,7 +28,7 @@ def get_home_keyboard(
         builder.row(
             InlineKeyboardButton(
                 text=i18n.get(
-                    "button-join-meeting",
+                    "button-join-meeting-named",
                     meeting=meeting.title,
                 ),
                 url=meeting.online_meeting_url,

@@ -30,7 +30,7 @@ class DetailScene(BaseScene, state="detail"):
                 room=class_record.room_name,
                 teacher=class_record.teacher_name,
             ),
-            reply_markup=get_detail_keyboard(i18n),
+            reply_markup=get_detail_keyboard(class_record, i18n),
             message_to_delete=message.message_id,
         )
 

@@ -1,6 +1,7 @@
 from datetime import date
 from typing import Dict, Any
 
+from aiogram import Bot
 from aiogram_i18n import I18nContext
 from pydantic import BaseModel, Field
 
@@ -45,9 +46,10 @@ class ScheduleRecord(BaseModel):
                          for schedule_date, record in self.schedule.items()},
         }
 
-    def to_string(
+    async def to_string(
             self,
             schedule_date: date,
+            bot: Bot,
             i18n: I18nContext,
     ) -> str | None:
         """
@@ -55,6 +57,7 @@ class ScheduleRecord(BaseModel):
         If date is not present in schedule, returns an empty string.
 
         :param schedule_date: Date for ScheduleDayRecord.
+        :param bot: Bot instance.
         :param i18n: I18n context.
         :return: String representation.
         """
@@ -64,4 +67,4 @@ class ScheduleRecord(BaseModel):
         if schedule_day is None:
             return ""
 
-        return schedule_day.to_string(i18n)
+        return await schedule_day.to_string(bot, i18n)

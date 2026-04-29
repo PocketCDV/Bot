@@ -21,6 +21,7 @@ from app.bot.middlewares.session_id import SessionIDMiddleware
 from app.bot.middlewares.user import UserMiddleware
 from app.bot.routes.home import home_router
 from app.bot.routes.start import start_router
+from app.bot.scenes.detail import DetailScene
 from app.bot.scenes.home import HomeScene
 from app.bot.scenes.language import LanguageScene
 from app.bot.scenes.schedule import ScheduleScene
@@ -103,6 +104,7 @@ def create_dispatcher() -> Dispatcher:
         StartScene,
         HomeScene,
         ScheduleScene,
+        DetailScene,
         LanguageScene,
     )
 

@@ -8,5 +8,5 @@ start_router = Router(name=__name__)
 
 start_router.message.register(
     StartScene.as_handler(),
-    CommandStart(),
+    CommandStart(deep_link=False),
 )

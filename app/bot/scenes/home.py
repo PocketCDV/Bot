@@ -1,9 +1,15 @@
+from aiogram import Bot
+from aiogram.filters import CommandStart, CommandObject
+from aiogram.fsm.context import FSMContext
 from aiogram.fsm.scene import on
-from aiogram.types import Message, CallbackQuery, InlineKeyboardMarkup
+from aiogram.types import Message, CallbackQuery
+from aiogram.utils.payload import decode_payload
 from aiogram_i18n import I18nContext
 
 from app.assets.controllers.schedule import ScheduleController
+from app.assets.models.class_record import ClassRecord
 from app.assets.models.schedule_day_record import ScheduleDayRecord
+from app.bot.enums.payload_action import PayloadAction
 from app.bot.exceptions.invalid_session import InvalidSessionError
 from app.bot.keyboards.home import get_home_keyboard
 from app.bot.logger import logger
@@ -20,28 +26,31 @@ class HomeScene(BaseScene, state="home"):
     async def on_message_enter(
             self,
             message: Message,
-            user_message: UserMessage,
-            session_id: str,
-            i18n: I18nContext,
+            bot: Bot,
+            state: FSMContext,
             schedule_controller: ScheduleController,
+            session_id: str,
+            user_message: UserMessage,
+            i18n: I18nContext,
     ) -> None:
         try:
             if session_id is None:
                 raise InvalidSessionError
 
-            text, keyboard = await self._get_schedule_content(
-                message.from_user.first_name, session_id, i18n, schedule_controller
+            await self._display_home_page(
+                message.from_user.first_name,
+                bot,
+                state,
+                schedule_controller,
+                session_id,
+                user_message,
+                i18n,
+                message_to_delete=message.message_id,
             )
         except InvalidSessionError:
             await user_message.new_login(i18n)
             await self.wizard.exit()
             return
-
-        await user_message.new(
-            text,
-            reply_markup=keyboard,
-            message_to_delete=message.message_id,
-        )
 
         logger.info(
             f"User {message.from_user.id} opened the home page."
@@ -51,32 +60,65 @@ class HomeScene(BaseScene, state="home"):
     async def on_callback_query_enter(
             self,
             callback_query: CallbackQuery,
-            user_message: UserMessage,
-            session_id: str,
-            i18n: I18nContext,
+            bot: Bot,
+            state: FSMContext,
             schedule_controller: ScheduleController,
+            session_id: str,
+            user_message: UserMessage,
+            i18n: I18nContext,
     ) -> None:
         try:
             if session_id is None:
                 raise InvalidSessionError
 
-            text, keyboard = await self._get_schedule_content(
-                callback_query.from_user.first_name, session_id, i18n, schedule_controller
+            await self._display_home_page(
+                callback_query.from_user.first_name,
+                bot,
+                state,
+                schedule_controller,
+                session_id,
+                user_message,
+                i18n,
             )
         except InvalidSessionError:
             await user_message.edit_login(i18n)
             await self.wizard.exit()
             return
 
-        await user_message.edit(
-            text,
-            reply_markup=keyboard,
-        )
         await callback_query.answer()
 
         logger.info(
             f"User {callback_query.from_user.id} opened the home page."
         )
+
+    @on.message(CommandStart(deep_link=True))
+    async def on_start(
+            self,
+            message: Message,
+            command: CommandObject,
+            state: FSMContext,
+    ) -> None:
+        await message.delete()
+
+        payload: str = decode_payload(command.args)
+        action, data = payload.split(":")
+
+        if action != PayloadAction.DETAIL:
+            return
+
+        term_id: int = int(data)
+        schedule: ScheduleDayRecord = ScheduleDayRecord.from_json(await state.get_value("schedule"))
+        class_record: ClassRecord | None = None
+
+        for class_record in schedule.class_records:
+            if class_record.term_id == term_id:
+                class_record: ClassRecord = class_record
+                break
+
+        if class_record is None:
+            return
+
+        await self.wizard.goto("detail", class_record=class_record)
 
     @on.message()
     async def on_message(
@@ -86,26 +128,45 @@ class HomeScene(BaseScene, state="home"):
         await message.delete()
 
     @staticmethod
-    async def _get_schedule_content(
+    async def _display_home_page(
             first_name: str,
-            session_id: str,
-            i18n: I18nContext,
+            bot: Bot,
+            state: FSMContext,
             schedule_controller: ScheduleController,
-    ) -> tuple[str, InlineKeyboardMarkup]:
+            session_id: str,
+            user_message: UserMessage,
+            i18n: I18nContext,
+            *,
+            message_to_delete: int | None = None,
+    ) -> None:
         """
-        Retrieve message text as string, and a reply markup.
-        :param first_name: User's first name.
-        :param session_id: WU session ID.
-        :param i18n: I18n context.
-        :param schedule_controller: ScheduleController instance.
-        :return: Message text and a reply markup.
+        Display home page information.
         """
 
         schedule: ScheduleDayRecord = await schedule_controller.get_home_schedule(session_id)
 
         if schedule.class_records:
-            text: str = i18n.get("home", first_name=first_name, classes=schedule.to_string(i18n))
+            text: str = i18n.get(
+                "home",
+                first_name=first_name,
+                classes=await schedule.to_string(bot, i18n),
+            )
         else:
-            text: str = i18n.get("home-no-classes", first_name=first_name)
+            text: str = i18n.get(
+                "home-no-classes",
+                first_name=first_name,
+            )
 
-        return text, get_home_keyboard(i18n)
+        if message_to_delete is not None:
+            await user_message.new(
+                text,
+                reply_markup=get_home_keyboard(schedule, i18n),
+                message_to_delete=message_to_delete,
+            )
+        else:
+            await user_message.edit(
+                text,
+                reply_markup=get_home_keyboard(schedule, i18n),
+            )
+
+        await state.update_data(schedule=schedule.to_json())

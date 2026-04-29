@@ -141,10 +141,10 @@ async def __async_home_page_refresh() -> None:
                     i18n.get(
                         "home-updated",
                         first_name=user.first_name,
-                        classes=schedule_day.to_string(i18n),
+                        classes=await schedule_day.to_string(bot, i18n),
                         updated=time.strftime("%H:%M"),
                     ),
-                    reply_markup=get_home_keyboard(i18n),
+                    reply_markup=get_home_keyboard(schedule_day, i18n),
                 )
             else:
                 await user_message.edit(
@@ -153,7 +153,7 @@ async def __async_home_page_refresh() -> None:
                         first_name=user.first_name,
                         updated=time.strftime("%H:%M"),
                     ),
-                    reply_markup=get_home_keyboard(i18n),
+                    reply_markup=get_home_keyboard(schedule_day, i18n),
                 )
 
 

@@ -9,12 +9,17 @@ class ClassEntry(BaseModel):
     WU Model of a class entry, contains everything WU provides about each class.
     """
 
+    term_id: int
+    """
+    Class ID.
+    """
+
     title: str
     """
     Class title.
     """
 
-    module: str | None = None
+    module: str
     """
     Class module.
     """
@@ -22,6 +27,11 @@ class ClassEntry(BaseModel):
     form: str
     """
     Class form, could be 'Laboratory', 'Lecture' etc.
+    """
+
+    status: str | None = None
+    """
+    Class status. Could be 'REGULAR', 'CANCELLED' etc.
     """
 
     start_time: datetime
@@ -34,29 +44,19 @@ class ClassEntry(BaseModel):
     End time of the class.
     """
 
-    term_id: int
-    """
-    Class ID.
-    """
-
-    group_id: int
-    """
-    User's group ID.
-    """
-
-    room: int
+    room_id: int
     """
     Class room ID.
     """
 
-    teachers: int
+    teacher_id: int
     """
     Teacher ID.
     """
 
-    status: str | None = None
+    hangout_link: str | None = None
     """
-    Class status. Could be 'REGULAR', 'CANCELLED' etc.
+    URL for an online meeting.
     """
 
     @classmethod
@@ -71,16 +71,16 @@ class ClassEntry(BaseModel):
         """
 
         return cls(
-            title=data["title"],
+            term_id=data.get("term_id"),
+            title=data.get("title"),
             module=data.get("module"),
-            form=data["form"],
-            start_time=data["start"],
-            end_time=data["end"],
-            term_id=data["term_id"],
-            group_id=data["group_id"],
-            room=data["room"],
-            teachers=data["teachers"],
+            form=data.get("form"),
             status=data.get("status"),
+            start_time=data.get("start"),
+            end_time=data.get("end"),
+            room_id=data.get("room"),
+            teacher_id=data.get("teachers"),
+            hangout_link=data.get("hangoutLink").replace("\\/", "/") if data.get("hangoutLink") else None,
         )
 
     @classmethod

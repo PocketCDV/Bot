@@ -70,6 +70,8 @@ class ClassRecord(BaseModel):
     URL for an online meeting.
     """
 
+    is_cancelled: bool = False
+
     @classmethod
     def from_entry(
             cls,
@@ -97,6 +99,7 @@ class ClassRecord(BaseModel):
             teacher_name=teacher_names.get(class_entry.teacher_id, "Unknown lecturer"),
             teacher_id=class_entry.teacher_id,
             online_meeting_url=class_entry.hangout_link,
+            is_cancelled=class_entry.status == "CANCELLED",
         )
 
     @classmethod

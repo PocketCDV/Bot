@@ -14,7 +14,7 @@ schedule-class-entry =
         📋 <b>{ $title }</b>
 
         📂 <b>Модуль:</b> { $module }
-        <b>Форма занятий:</b> { $form }
+        <b>Форма занятий:</b> { $form_color } { $form }
 
         ⌛️ <b>Дата:</b> { $date }
         <b>Продолжительность:</b> { $start_time } - { $end_time }

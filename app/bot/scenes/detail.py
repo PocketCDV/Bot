@@ -1,3 +1,5 @@
+from typing import Dict
+
 from aiogram.fsm.scene import on
 from aiogram.types import Message
 from aiogram_i18n import I18nContext
@@ -10,6 +12,19 @@ from app.bot.scenes.base import BaseScene
 
 
 class DetailScene(BaseScene, state="detail"):
+    _FORM_COLORS: Dict[str, str] = {
+        "Lecture": "🟩",
+        "Classes": "🟨",
+        "Project": "🟥",
+        "Laboratory": "🟦",
+        "Seminar": "🟦",
+        "Tutorial": "🟥",
+        "Workshops": "🟦",
+        "Foreign language course": "🟪",
+        "Studio": "⬛",
+        "Other": "🟪",
+    }
+
     @on.message.enter()
     async def on_enter(
             self,
@@ -24,6 +39,7 @@ class DetailScene(BaseScene, state="detail"):
                 title=class_record.title,
                 module=class_record.module,
                 form=class_record.form,
+                form_color=self._FORM_COLORS.get(class_record.form, ""),
                 date=class_record.start_time.strftime("%d.%m.%Y"),
                 start_time=class_record.start_time.strftime("%H:%M"),
                 end_time=class_record.end_time.strftime("%H:%M"),

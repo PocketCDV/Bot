@@ -5,7 +5,7 @@ from aiogram_i18n import I18nContext
 from app.assets.models.class_record import ClassRecord
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.bot.actions.switch_scene import SwitchSceneAction
-from app.bot.utils import now_local
+from app.utils import now_local
 
 
 def get_home_keyboard(

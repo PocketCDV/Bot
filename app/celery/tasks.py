@@ -11,7 +11,7 @@ from aiogram_i18n.managers.memory import MemoryManager
 from redis.asyncio import Redis
 
 from app.bot.middlewares.user_message import UserMessage
-from app.bot.utils import get_state
+from app.utils import get_state
 from app.celery.worker import worker, config
 
 

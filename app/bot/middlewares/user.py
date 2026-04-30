@@ -5,7 +5,7 @@ from aiogram.types import TelegramObject
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database.models import User
+from app.assets.models.database import User
 
 
 class UserMiddleware(BaseMiddleware):

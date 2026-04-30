@@ -3,7 +3,7 @@ from aiogram_i18n.managers import BaseManager
 from sqlalchemy import update
 
 from app.assets.controllers.database import DatabaseController
-from app.database.models import User
+from app.assets.models.database import User
 
 
 class LocaleManager(BaseManager):

@@ -25,9 +25,9 @@ from app.asgi.dependencies import (
 from app.asgi.limiter import limiter
 from app.asgi.logger import logger
 from app.assets.controllers.cdv import CDVController
-from app.bot.utils import get_state
+from app.utils import get_state
 from app.celery.tasks import set_successful_login_message
-from app.database.models import User
+from app.assets.models.database import User
 from config import Config
 
 auth_router: APIRouter = APIRouter(prefix="/auth", tags=["Auth"])

@@ -6,8 +6,8 @@ from aiohttp import ClientTimeout
 
 from app.assets.controllers.client import ClientController
 from app.assets.models.class_entry import ClassEntry
-from app.bot.exceptions import BotError
-from app.bot.exceptions.invalid_session import InvalidSessionError
+from app.assets.exceptions import BotError
+from app.assets.exceptions.invalid_session import InvalidSessionError
 
 
 class CDVController:

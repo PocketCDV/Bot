@@ -18,12 +18,12 @@ from app.assets.controllers.client import ClientController
 from app.assets.controllers.database import DatabaseController
 from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_day_record import ScheduleDayRecord
-from app.bot.exceptions import BotError
-from app.bot.exceptions.invalid_session import InvalidSessionError
+from app.assets.exceptions import BotError
+from app.assets.exceptions.invalid_session import InvalidSessionError
 from app.bot.middlewares.user_message import UserMessage
-from app.bot.utils import get_state
+from app.utils import get_state
 from app.celery.worker import worker, config
-from app.database.models import User
+from app.assets.models.database import User
 
 
 async def __async_session_refresh() -> None:

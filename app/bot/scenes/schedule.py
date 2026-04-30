@@ -15,12 +15,12 @@ from app.assets.models.class_record import ClassRecord
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.assets.models.schedule_record import ScheduleRecord
 from app.bot.actions.flip_page import FlipPageAction
-from app.bot.enums.payload_action import PayloadAction
-from app.bot.exceptions.invalid_session import InvalidSessionError
+from app.assets.enums import PayloadAction
+from app.assets.exceptions.invalid_session import InvalidSessionError
 from app.bot.keyboards.schedule import get_schedule_keyboard
 from app.bot.middlewares.user_message import UserMessage
 from app.bot.scenes.base import BaseScene
-from app.bot.utils import today_local
+from app.utils import today_local
 
 
 class ScheduleScene(BaseScene, state="schedule"):

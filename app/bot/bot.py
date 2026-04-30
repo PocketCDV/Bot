@@ -14,7 +14,7 @@ from app.assets.controllers.cdv import CDVController
 from app.assets.controllers.client import ClientController
 from app.assets.controllers.database import DatabaseController
 from app.assets.controllers.schedule import ScheduleController
-from app.bot.managers.locale import LocaleManager
+from app.bot.locale_manager import LocaleManager
 from app.bot.middlewares.database import DatabaseMiddleware
 from app.bot.middlewares.user_message import UserMessageMiddleware
 from app.bot.middlewares.session_id import SessionIDMiddleware

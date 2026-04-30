@@ -7,7 +7,7 @@ from aiogram_i18n import I18nContext
 from pydantic import BaseModel
 
 from app.assets.models.class_entry import ClassEntry
-from app.bot.enums.payload_action import PayloadAction
+from app.assets.enums.payload_action import PayloadAction
 
 
 class ClassRecord(BaseModel):

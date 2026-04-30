@@ -8,7 +8,7 @@ from app.bot.keyboards.start import get_start_keyboard
 from app.bot.logger import logger
 from app.bot.middlewares.user_message import UserMessage
 from app.bot.scenes.base import BaseScene
-from app.database.models import User
+from app.assets.models.database import User
 
 
 class StartScene(BaseScene, state="start"):

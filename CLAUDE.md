@@ -60,16 +60,16 @@ A two-tier controller pattern is used consistently and should be preserved:
 
 When adding a new external integration, follow the same pattern: low-level session controller, then a higher-level controller that combines it with the database.
 
-### Schedule data model (`app/assets/models/`)
+### Schedule data model (`app/assets/models/records/`)
 
-Plain dataclass-style records, **not** SQLAlchemy models:
+Plain Pydantic record models, **not** SQLAlchemy models:
 
-- `ClassEntry` — raw row from CDV `get-student-plan`.
+- `RawClassRecord` — raw row from CDV `get-student-plan`.
 - `ClassRecord` — enriched single class with resolved room/teacher names.
-- `ScheduleDayRecord` — list of `ClassRecord` for one day; renders itself to an HTML string.
-- `ScheduleRecord` — `Dict[date, ScheduleDayRecord]`; has `to_json`/`from_json` so it can round-trip through aiogram FSM state.
+- `DailyScheduleRecord` — list of `ClassRecord` for one day; renders itself to an HTML string.
+- `ScheduleRecord` — `Dict[date, DailyScheduleRecord]`; has `to_json`/`from_json` so it can round-trip through aiogram FSM state.
 
-Persistence in Postgres is intentionally narrow (`User`, `Room`, `Teacher` in `app/database/models.py`) — schedules themselves are never stored, only fetched on demand and cached in FSM state.
+Persistence in Postgres is intentionally narrow — `Base`, `User`, `Room`, `Teacher` live in `app/assets/models/database/` (one class per file, re-exported from `database/__init__.py`). Schedules themselves are never stored, only fetched on demand and cached in FSM state.
 
 ### Bot UI: scenes + middlewares
 

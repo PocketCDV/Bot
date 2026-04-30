@@ -6,10 +6,10 @@ from sqlalchemy import select
 
 from app.assets.controllers.cdv import CDVController
 from app.assets.controllers.database import DatabaseController
-from app.assets.models.class_entry import ClassEntry
-from app.assets.models.class_record import ClassRecord
-from app.assets.models.schedule_day_record import ScheduleDayRecord
-from app.assets.models.schedule_record import ScheduleRecord
+from app.assets.models.records.raw_class_record import RawClassRecord
+from app.assets.models.records.class_record import ClassRecord
+from app.assets.models.records.daily_schedule_record import DailyScheduleRecord
+from app.assets.models.records.schedule_record import ScheduleRecord
 from app.utils import today_local
 from app.assets.models.database import Room, Teacher
 
@@ -37,28 +37,28 @@ class ScheduleController:
     async def get_home_schedule(
             self,
             session_id: str,
-    ) -> ScheduleDayRecord:
+    ) -> DailyScheduleRecord:
         """
-        Retrieves today's schedule for the home page. Returns a ScheduleDayRecord for the current date.
+        Retrieves today's schedule for the home page. Returns a DailyScheduleRecord for the current date.
         :param session_id: WU session ID.
-        :return: ScheduleDayRecord for the current date.
+        :return: DailyScheduleRecord for the current date.
         """
 
         schedule_date: date = today_local()
 
-        class_entries: Sequence[ClassEntry] = await self._cdv.get_schedule(
+        raw_class_records: Sequence[RawClassRecord] = await self._cdv.get_schedule(
             session_id,
             schedule_date,
             schedule_date,
         )
 
-        room_names: Mapping[int, str] = await self._fetch_room_names(class_entries)
-        teacher_names: Mapping[int, str] = await self._fetch_teacher_names(class_entries, session_id)
+        room_names: Mapping[int, str] = await self._fetch_room_names(raw_class_records)
+        teacher_names: Mapping[int, str] = await self._fetch_teacher_names(raw_class_records, session_id)
 
-        return ScheduleDayRecord(
+        return DailyScheduleRecord(
             class_records=[
-                ClassRecord.from_entry(class_entry, room_names, teacher_names)
-                for class_entry in class_entries
+                ClassRecord.from_entry(raw_class_record, room_names, teacher_names)
+                for raw_class_record in raw_class_records
             ]
         )
 
@@ -76,41 +76,41 @@ class ScheduleController:
         :return: ScheduleRecord for the selected date range.
         """
 
-        class_entries: Sequence[ClassEntry] = await self._cdv.get_schedule(
+        raw_class_records: Sequence[RawClassRecord] = await self._cdv.get_schedule(
             session_id,
             start_date,
             end_date,
         )
 
-        room_names: Mapping[int, str] = await self._fetch_room_names(class_entries)
-        teacher_names: Mapping[int, str] = await self._fetch_teacher_names(class_entries, session_id)
+        room_names: Mapping[int, str] = await self._fetch_room_names(raw_class_records)
+        teacher_names: Mapping[int, str] = await self._fetch_teacher_names(raw_class_records, session_id)
 
         schedule: ScheduleRecord = ScheduleRecord()
 
-        for class_entry in class_entries:
-            entry_date = class_entry.start_time.date()
+        for raw_class_record in raw_class_records:
+            entry_date = raw_class_record.start_time.date()
 
             if entry_date not in schedule.schedule:
-                schedule.schedule[entry_date] = ScheduleDayRecord()
+                schedule.schedule[entry_date] = DailyScheduleRecord()
 
             schedule.schedule[entry_date].class_records.append(
-                ClassRecord.from_entry(class_entry, room_names, teacher_names)
+                ClassRecord.from_entry(raw_class_record, room_names, teacher_names)
             )
 
         return schedule
 
     async def _fetch_room_names(
             self,
-            class_entries: Sequence[ClassEntry],
+            raw_class_records: Sequence[RawClassRecord],
     ) -> Mapping[int, str]:
         """
         Fetches room names from database using all room IDs from a sequence of class entries,
         and creates a mapping of existent room ID, and it's name.
-        :param class_entries: Sequence of class entries.
+        :param raw_class_records: Sequence of class entries.
         :return: Mapping of room IDs to room names.
         """
 
-        room_ids: Set[int] = {class_entry.room_id for class_entry in class_entries}
+        room_ids: Set[int] = {raw_class_record.room_id for raw_class_record in raw_class_records}
 
         async with self._database.session() as database_session:
             return {
@@ -125,19 +125,19 @@ class ScheduleController:
 
     async def _fetch_teacher_names(
             self,
-            class_entries: Sequence[ClassEntry],
+            raw_class_records: Sequence[RawClassRecord],
             session_id: str,
     ) -> Mapping[int, str]:
         """
         Fetches teacher names from database using all teacher IDs from a sequence of class entries.
         If a teacher is not found in the database, falls back to fetching from remote API.
         Teachers that could not be fetched from either source are excluded from the mapping.
-        :param class_entries: Sequence of class entries.
+        :param raw_class_records: Sequence of class entries.
         :param session_id: WU session ID.
         :return: Mapping of teacher IDs to teacher names.
         """
 
-        teacher_ids: Set[int] = {class_entry.teacher_id for class_entry in class_entries}
+        teacher_ids: Set[int] = {raw_class_record.teacher_id for raw_class_record in raw_class_records}
 
         async with self._database.session() as database_session:
             rows = (

@@ -9,7 +9,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import TelegramObject, User, InlineKeyboardMarkup, Message, LinkPreviewOptions
 from aiogram_i18n import I18nContext
 
-from app.assets.models.schedule_day_record import ScheduleDayRecord
+from app.assets.models.records.daily_schedule_record import DailyScheduleRecord
 from app.bot.keyboards.home import get_home_keyboard
 from app.bot.keyboards.login import get_login_keyboard
 from app.utils import now_local
@@ -134,20 +134,20 @@ class UserMessage:
     async def refresh_home_page(
             self,
             user: User,
-            schedule: ScheduleDayRecord,
+            daily_schedule: DailyScheduleRecord,
             i18n: I18nContext,
     ) -> None:
         time: datetime = now_local()
 
-        if schedule.class_records:
+        if daily_schedule.class_records:
             await self.edit(
                 i18n.get(
                     "home-updated",
                     first_name=user.first_name,
-                    classes=await schedule.to_string(self._bot, i18n),
+                    classes=await daily_schedule.to_string(self._bot, i18n),
                     updated=time.strftime("%H:%M"),
                 ),
-                reply_markup=get_home_keyboard(schedule, i18n),
+                reply_markup=get_home_keyboard(daily_schedule, i18n),
             )
         else:
             await self.edit(
@@ -156,7 +156,7 @@ class UserMessage:
                     first_name=user.first_name,
                     updated=time.strftime("%H:%M"),
                 ),
-                reply_markup=get_home_keyboard(schedule, i18n),
+                reply_markup=get_home_keyboard(daily_schedule, i18n),
             )
 
     async def ask_to_log_in(

@@ -2,7 +2,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram_i18n import I18nContext
 
-from app.assets.models.class_record import ClassRecord
+from app.assets.models.records.class_record import ClassRecord
 from app.bot.actions.back import BackAction
 
 

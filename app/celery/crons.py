@@ -17,7 +17,7 @@ from app.assets.controllers.cdv import CDVController
 from app.assets.controllers.client import ClientController
 from app.assets.controllers.database import DatabaseController
 from app.assets.controllers.schedule import ScheduleController
-from app.assets.models.schedule_day_record import ScheduleDayRecord
+from app.assets.models.records.daily_schedule_record import DailyScheduleRecord
 from app.assets.exceptions import BotError
 from app.assets.exceptions.invalid_session import InvalidSessionError
 from app.bot.middlewares.user_message import UserMessage
@@ -123,14 +123,14 @@ async def __async_home_page_refresh() -> None:
             i18n: I18nContext = I18nContext(user.locale, core, MemoryManager(), {})
 
             try:
-                schedule_day: ScheduleDayRecord = await schedule.get_home_schedule(session_id)
+                daily_schedule: DailyScheduleRecord = await schedule.get_home_schedule(session_id)
             except InvalidSessionError:
                 await user_message.ask_to_log_in(i18n)
                 continue
             except BotError:
                 continue
 
-            await user_message.refresh_home_page(user, schedule_day, i18n)
+            await user_message.refresh_home_page(user, daily_schedule, i18n)
 
 
 @worker.task(name="session_refresh")

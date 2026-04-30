@@ -4,12 +4,12 @@ from typing import Dict, Any
 from pydantic import BaseModel
 
 
-class ClassEntry(BaseModel):
+class RawClassRecord(BaseModel):
     """
     WU Model of a class entry, contains everything WU provides about each class.
     """
 
-    term_id: int
+    class_id: int
     """
     Class ID.
     """
@@ -63,15 +63,15 @@ class ClassEntry(BaseModel):
     def from_data(
             cls,
             data: Dict[str, Any],
-    ) -> 'ClassEntry':
+    ) -> 'RawClassRecord':
         """
-        Returns a ClassEntry object from raw WU Data.
+        Returns a RawClassRecord object from raw WU Data.
         :param data: Data from WU.
-        :return: ClassEntry object.
+        :return: RawClassRecord object.
         """
 
         return cls(
-            term_id=data.get("term_id"),
+            class_id=data.get("term_id"),
             title=data.get("title"),
             module=data.get("module"),
             form=data.get("form"),
@@ -87,18 +87,18 @@ class ClassEntry(BaseModel):
     def from_json(
             cls,
             data: Dict[str, Any],
-    ) -> 'ClassEntry':
+    ) -> 'RawClassRecord':
         """
-        Returns ClassEntry object from JSON.
+        Returns RawClassRecord object from JSON.
         :param data: JSON data.
-        :return: ClassEntry object.
+        :return: RawClassRecord object.
         """
 
         return cls.model_validate(data)
 
     def to_json(self) -> Dict[str, Any]:
         """
-        Converts ClassEntry object to JSON.
+        Converts RawClassRecord object to JSON.
         :return: JSON data.
         """
 

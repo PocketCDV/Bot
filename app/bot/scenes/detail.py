@@ -4,7 +4,7 @@ from aiogram.fsm.scene import on
 from aiogram.types import Message
 from aiogram_i18n import I18nContext
 
-from app.assets.models.class_record import ClassRecord
+from app.assets.models.records.class_record import ClassRecord
 from app.bot.keyboards.detail import get_detail_keyboard
 from app.bot.logger import logger
 from app.bot.middlewares.user_message import UserMessage

@@ -5,10 +5,10 @@ from aiogram import Bot
 from aiogram_i18n import I18nContext
 from pydantic import BaseModel, Field
 
-from app.assets.models.class_record import ClassRecord
+from app.assets.models.records.class_record import ClassRecord
 
 
-class ScheduleDayRecord(BaseModel):
+class DailyScheduleRecord(BaseModel):
     """
     Contains a sequence of class records of the same date, represents a single day in a schedule.
     """
@@ -22,9 +22,9 @@ class ScheduleDayRecord(BaseModel):
     def from_json(
             cls,
             data: Dict[str, Any],
-    ) -> 'ScheduleDayRecord':
+    ) -> 'DailyScheduleRecord':
         """
-        Returns a ScheduleDayRecord object from JSON.
+        Returns a DailyScheduleRecord object from JSON.
         :param data:
         :return:
         """
@@ -35,7 +35,7 @@ class ScheduleDayRecord(BaseModel):
 
     def to_json(self) -> Dict[str, Any]:
         """
-        Converts the ScheduleDayRecord object to JSON.
+        Converts the DailyScheduleRecord object to JSON.
         :return: JSON data.
         """
 
@@ -49,7 +49,7 @@ class ScheduleDayRecord(BaseModel):
             i18n: I18nContext,
     ) -> str:
         """
-        Converts ScheduleDayRecord object to a string representation.
+        Converts DailyScheduleRecord object to a string representation.
         :param bot: Bot instance.
         :param i18n: I18n context.
         :return: String representation.

@@ -11,9 +11,9 @@ from aiogram_i18n import I18nContext
 
 from app.asgi.logger import logger
 from app.assets.controllers.schedule import ScheduleController
-from app.assets.models.class_record import ClassRecord
-from app.assets.models.schedule_day_record import ScheduleDayRecord
-from app.assets.models.schedule_record import ScheduleRecord
+from app.assets.models.records.class_record import ClassRecord
+from app.assets.models.records.daily_schedule_record import DailyScheduleRecord
+from app.assets.models.records.schedule_record import ScheduleRecord
 from app.bot.actions.flip_page import FlipPageAction
 from app.assets.enums import PayloadAction
 from app.assets.exceptions.invalid_session import InvalidSessionError
@@ -118,17 +118,16 @@ class ScheduleScene(BaseScene, state="schedule"):
         if action != PayloadAction.DETAIL:
             return
 
-        term_id: int = int(payload_data)
+        class_id: int = int(payload_data)
 
         data: Dict[str, Any] = await state.get_data()
 
         schedule_date: date = date.fromisoformat(data["schedule_date"])
-        schedule: ScheduleDayRecord | None = ScheduleRecord.from_json(data["schedule"]).schedule.get(schedule_date)
+        daily_schedule: DailyScheduleRecord | None = ScheduleRecord.from_json(data["schedule"]).schedule.get(schedule_date)
         class_record: ClassRecord | None = None
 
-        for class_record in schedule.class_records:
-            if class_record.term_id == term_id:
-                class_record: ClassRecord = class_record
+        for class_record in daily_schedule.class_records:
+            if class_record.class_id == class_id:
                 break
 
         if class_record is None:

@@ -48,7 +48,7 @@ class ScheduleScene(BaseScene, state="schedule"):
             start_date, end_date = self._get_week_range_by_date(schedule_date)
             schedule: ScheduleRecord = await schedule_controller.get_schedule(start_date, end_date, session_id)
         except InvalidSessionError:
-            await user_message.edit_login(i18n)
+            await user_message.ask_to_log_in(i18n)
             await self.wizard.exit()
             return
 
@@ -87,7 +87,7 @@ class ScheduleScene(BaseScene, state="schedule"):
                 data, callback_data.offset, session_id, schedule_controller
             )
         except InvalidSessionError:
-            await user_message.edit_login(i18n)
+            await user_message.ask_to_log_in(i18n)
             await self.wizard.exit()
             return
 

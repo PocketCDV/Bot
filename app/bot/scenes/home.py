@@ -48,7 +48,7 @@ class HomeScene(BaseScene, state="home"):
                 message_to_delete=message.message_id,
             )
         except InvalidSessionError:
-            await user_message.new_login(i18n)
+            await user_message.ask_to_log_in(i18n)
             await self.wizard.exit()
             return
 
@@ -81,7 +81,7 @@ class HomeScene(BaseScene, state="home"):
                 i18n,
             )
         except InvalidSessionError:
-            await user_message.edit_login(i18n)
+            await user_message.ask_to_log_in(i18n)
             await self.wizard.exit()
             return
 

@@ -1,6 +1,5 @@
 import asyncio
 import sys
-from datetime import datetime
 from ssl import create_default_context
 
 from aiogram import Bot
@@ -21,9 +20,8 @@ from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.bot.exceptions import BotError
 from app.bot.exceptions.invalid_session import InvalidSessionError
-from app.bot.keyboards.home import get_home_keyboard
 from app.bot.middlewares.user_message import UserMessage
-from app.bot.utils import get_state, now_local
+from app.bot.utils import get_state
 from app.celery.worker import worker, config
 from app.database.models import User
 
@@ -113,8 +111,7 @@ async def __async_home_page_refresh() -> None:
 
             user: User = user
             state: FSMContext = get_state(redis, bot, user.telegram_id)
-            scene_state: str | None = await state.get_state()
-            if scene_state is None or scene_state != "home":
+            if await state.get_state() != "home":
                 continue
 
             session_id: str = await state.get_value("session_id")
@@ -128,32 +125,12 @@ async def __async_home_page_refresh() -> None:
             try:
                 schedule_day: ScheduleDayRecord = await schedule.get_home_schedule(session_id)
             except InvalidSessionError:
-                await user_message.edit_login(i18n)
+                await user_message.ask_to_log_in(i18n)
                 continue
             except BotError:
                 continue
 
-            time: datetime = now_local()
-
-            if schedule_day.class_records:
-                await user_message.edit(
-                    i18n.get(
-                        "home-updated",
-                        first_name=user.first_name,
-                        classes=await schedule_day.to_string(bot, i18n),
-                        updated=time.strftime("%H:%M"),
-                    ),
-                    reply_markup=get_home_keyboard(schedule_day, i18n),
-                )
-            else:
-                await user_message.edit(
-                    i18n.get(
-                        "home-no-classes-updated",
-                        first_name=user.first_name,
-                        updated=time.strftime("%H:%M"),
-                    ),
-                    reply_markup=get_home_keyboard(schedule_day, i18n),
-                )
+            await user_message.refresh_home_page(user, schedule_day, i18n)
 
 
 @worker.task(name="session_refresh")

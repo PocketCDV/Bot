@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import Column, UUID, String, DateTime, BigInteger
+from sqlalchemy.orm import relationship
 from uuid_extensions import uuid7
 
 from app.assets.models.database.base import Base
@@ -41,4 +42,9 @@ class User(Base):
     updated_at = Column(DateTime(), nullable=True, onupdate=datetime.now)
     """
     User's last update date.
+    """
+
+    settings = relationship("UserSettings", back_populates="user", uselist=False)
+    """
+    Settings object related to user.
     """

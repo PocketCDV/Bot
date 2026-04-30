@@ -1,5 +1,5 @@
 import asyncio
-from datetime import date, datetime, timezone
+from datetime import date
 from typing import Sequence, Mapping, Set, Dict
 
 from sqlalchemy import select
@@ -10,6 +10,7 @@ from app.assets.models.class_entry import ClassEntry
 from app.assets.models.class_record import ClassRecord
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.assets.models.schedule_record import ScheduleRecord
+from app.bot.utils import today_local
 from app.database.models import Room, Teacher
 
 
@@ -43,7 +44,7 @@ class ScheduleController:
         :return: ScheduleDayRecord for the current date.
         """
 
-        schedule_date: date = datetime.now(timezone.utc).date()
+        schedule_date: date = today_local()
 
         class_entries: Sequence[ClassEntry] = await self._cdv.get_schedule(
             session_id,

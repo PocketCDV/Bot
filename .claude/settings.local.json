@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import app.assets.controllers.schedule; import app.bot.scenes.schedule; import app.bot.keyboards.home; import app.celery.crons; import app.bot.utils; print\\('OK'\\)\")"
+    ]
+  }
+}

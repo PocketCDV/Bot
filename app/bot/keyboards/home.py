@@ -1,5 +1,3 @@
-from datetime import datetime, timezone
-
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram_i18n import I18nContext
@@ -7,6 +5,7 @@ from aiogram_i18n import I18nContext
 from app.assets.models.class_record import ClassRecord
 from app.assets.models.schedule_day_record import ScheduleDayRecord
 from app.bot.actions.switch_scene import SwitchSceneAction
+from app.bot.utils import now_local
 
 
 def get_home_keyboard(
@@ -22,7 +21,7 @@ def get_home_keyboard(
 
     builder: InlineKeyboardBuilder = InlineKeyboardBuilder()
 
-    meeting: ClassRecord | None = schedule.get_active_meeting(datetime.now(timezone.utc))
+    meeting: ClassRecord | None = schedule.get_active_meeting(now_local())
 
     if meeting is not None:
         builder.row(

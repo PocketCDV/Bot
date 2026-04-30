@@ -2,7 +2,6 @@ import asyncio
 import sys
 from datetime import datetime
 from ssl import create_default_context
-from zoneinfo import ZoneInfo
 
 from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
@@ -24,7 +23,7 @@ from app.bot.exceptions import BotError
 from app.bot.exceptions.invalid_session import InvalidSessionError
 from app.bot.keyboards.home import get_home_keyboard
 from app.bot.middlewares.user_message import UserMessage
-from app.bot.utils import get_state
+from app.bot.utils import get_state, now_local
 from app.celery.worker import worker, config
 from app.database.models import User
 
@@ -134,7 +133,7 @@ async def __async_home_page_refresh() -> None:
             except BotError:
                 continue
 
-            time: datetime = datetime.now(tz=ZoneInfo("Europe/Warsaw"))
+            time: datetime = now_local()
 
             if schedule_day.class_records:
                 await user_message.edit(

@@ -95,13 +95,28 @@ class UserMessage:
             if self.message_id is None:
                 raise ValueError
 
-            await self._bot.edit_message_text(
-                chat_id=self.user_id,
-                message_id=self.message_id,
-                text=text,
-                reply_markup=reply_markup,
-                link_preview_options=LinkPreviewOptions(is_disabled=True),
-            )
+            coroutines: List[Coroutine] = [
+                self._bot.edit_message_text(
+                    chat_id=self.user_id,
+                    message_id=self.message_id,
+                    text=text,
+                    reply_markup=reply_markup,
+                    link_preview_options=LinkPreviewOptions(is_disabled=True),
+                ),
+            ]
+
+            if message_to_delete is not None:
+                coroutines.append(
+                    self._bot.delete_message(
+                        self.user_id,
+                        message_to_delete,
+                    ),
+                )
+
+            result, *_ = await asyncio.gather(*coroutines, return_exceptions=True)
+
+            if isinstance(result, Exception):
+                raise result
         except (TelegramBadRequest, ValueError) as error:
             if isinstance(error, TelegramBadRequest) and "message is not modified" in error.message:
                 return

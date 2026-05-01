@@ -42,8 +42,8 @@ def get_home_keyboard(
     )
     builder.row(
         InlineKeyboardButton(
-            text=i18n.get("button-lang"),
-            callback_data=SwitchSceneAction(scene="language").pack(),
+            text=i18n.get("button-settings"),
+            callback_data=SwitchSceneAction(scene="settings").pack(),
         )
     )
 

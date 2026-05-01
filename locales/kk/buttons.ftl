@@ -25,3 +25,15 @@ button-language = { $language ->
 button-join-meeting = 📲 постучаться
 
 button-join-meeting-named = 📲 постучаться к { $meeting }
+
+button-notifications = 🔔 пиликалки
+
+button-toggle-upcoming-notifications = { $enabled ->
+    [true] ✅ пиликать про ближайшие пары
+   *[false] ⬜ пиликать про ближайшие пары
+}
+
+button-toggle-daily-notifications = { $enabled ->
+    [true] ✅ пиликать каждый день
+   *[false] ⬜ пиликать каждый день
+}

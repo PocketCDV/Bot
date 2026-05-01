@@ -24,6 +24,7 @@ from app.bot.routes.start import start_router
 from app.bot.scenes.detail import DetailScene
 from app.bot.scenes.home import HomeScene
 from app.bot.scenes.language import LanguageScene
+from app.bot.scenes.notifications import NotificationsScene
 from app.bot.scenes.schedule import ScheduleScene
 from app.bot.scenes.settings import SettingsScene
 from app.bot.scenes.start import StartScene
@@ -107,6 +108,7 @@ def create_dispatcher() -> Dispatcher:
         ScheduleScene,
         DetailScene,
         SettingsScene,
+        NotificationsScene,
         LanguageScene,
     )
 

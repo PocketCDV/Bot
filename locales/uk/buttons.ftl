@@ -27,14 +27,16 @@ button-join-meeting = 📲 Підключитися до зустрічі
 
 button-join-meeting-named = 📲 Підключитися до { $meeting }
 
+button-settings = ⚙️ Налаштування
+
 button-notifications = 🔔 Сповіщення
 
 button-toggle-upcoming-notifications = { $enabled ->
     [true] ✅ Сповіщення про найближчі пари
-   *[false] ⬜ Сповіщення про найближчі пари
+   *[false] ❌ Сповіщення про найближчі пари
 }
 
 button-toggle-daily-notifications = { $enabled ->
     [true] ✅ Щоденні сповіщення про пари
-   *[false] ⬜ Щоденні сповіщення про пари
+   *[false] ❌ Щоденні сповіщення про пари
 }

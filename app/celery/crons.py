@@ -12,6 +12,7 @@ from aiogram_i18n.managers.memory import MemoryManager
 from certifi import where
 from redis.asyncio import Redis
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.assets.controllers.cdv import CDVController
 from app.assets.controllers.client import ClientController
@@ -103,7 +104,7 @@ async def __async_home_page_refresh() -> None:
 
     async with database.session() as database_session:
         users = await database_session.stream_scalars(
-            select(User)
+            select(User).options(selectinload(User.settings))
         )
 
         async for user in users:
@@ -120,7 +121,12 @@ async def __async_home_page_refresh() -> None:
                 await state.get_value("message_id"),
                 _bot=bot,
             )
-            i18n: I18nContext = I18nContext(user.locale, core, MemoryManager(), {})
+            i18n: I18nContext = I18nContext(
+                user.settings.locale if user.settings else None,
+                core,
+                MemoryManager(),
+                {},
+            )
 
             try:
                 daily_schedule: DailyScheduleRecord = await schedule.get_home_schedule(session_id)

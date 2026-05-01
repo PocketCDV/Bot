@@ -1,8 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import Column, UUID, DateTime, ForeignKey, Boolean
+from sqlalchemy import Column, UUID, DateTime, ForeignKey, Boolean, String
 from sqlalchemy.orm import relationship
-from uuid_extensions import uuid7
 
 from app.assets.models.database.base import Base
 
@@ -14,14 +13,14 @@ class UserSettings(Base):
 
     __tablename__ = "user_settings"
 
-    id = Column(UUID(True), primary_key=True, default=uuid7, nullable=False, index=True)
-    """
-    UUID.
-    """
-
-    user_id = Column(UUID(True), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True, nullable=False)
     """
     User id.
+    """
+
+    locale = Column(String(8), nullable=True, default=None)
+    """
+    User's locale. Used to localize telegram responses.
     """
 
     upcoming_class_notifications_enabled = Column(Boolean, nullable=False, default=False)

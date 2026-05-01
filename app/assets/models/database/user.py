@@ -29,11 +29,6 @@ class User(Base):
     First name from telegram.
     """
 
-    locale = Column(String(8), nullable=True, default=None)
-    """
-    User's locale. Used to localize telegram responses.
-    """
-
     created_at = Column(DateTime(), nullable=False, default=datetime.now)
     """
     User's creation date.

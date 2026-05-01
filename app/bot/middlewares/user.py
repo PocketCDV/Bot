@@ -4,6 +4,7 @@ from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.assets.models.database import User
 
@@ -37,6 +38,7 @@ class UserMiddleware(BaseMiddleware):
 
         user: User | None = await database_session.scalar(
             select(User)
+            .options(selectinload(User.settings))
             .filter_by(telegram_id=from_user.id).limit(1)
         )
 

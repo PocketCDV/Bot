@@ -37,7 +37,7 @@ class DetailScene(BaseScene, state="detail"):
             i18n.get(
                 "schedule-class-entry.detailed",
                 title=class_record.title,
-                module=class_record.module,
+                module=class_record.module or i18n.get("schedule-no-module"),
                 form=class_record.form,
                 form_color=self._FORM_COLORS.get(class_record.form, ""),
                 date=class_record.start_time.strftime("%d.%m.%Y"),

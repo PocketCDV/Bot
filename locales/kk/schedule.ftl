@@ -6,6 +6,8 @@ schedule-no-classes = 🗓 все что можно проебать в <b>{ $we
 
     💤 <i>нихера и так нет, иди спать.</i>
 
+schedule-no-module = без мудоля
+
 schedule-class-entry =
     .short =
         ⏳ <b>{ $start_time } - { $end_time } | { $room }</b>

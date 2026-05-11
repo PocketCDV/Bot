@@ -6,6 +6,8 @@ schedule-no-classes = 🗓 Расписание на <b>{ $weekday }, { $schedul
 
     💤 <i>В этот день занятий нет.</i>
 
+schedule-no-module = Без модуля
+
 schedule-class-entry =
     .short =
         ⏳ <b>{ $start_time } - { $end_time } | { $room }</b>

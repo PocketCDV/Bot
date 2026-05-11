@@ -19,9 +19,9 @@ class RawClassRecord(BaseModel):
     Class title.
     """
 
-    module: str
+    module: str | None = None
     """
-    Class module.
+    Class module. May be ``None`` when WU does not assign a module to the class.
     """
 
     form: str

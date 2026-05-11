@@ -19,6 +19,7 @@ from app.bot.middlewares.database import DatabaseMiddleware
 from app.bot.middlewares.user_message import UserMessageMiddleware
 from app.bot.middlewares.session_id import SessionIDMiddleware
 from app.bot.middlewares.user import UserMiddleware
+from app.bot.routes.dismiss import dismiss_router
 from app.bot.routes.home import home_router
 from app.bot.routes.start import start_router
 from app.bot.scenes.detail import DetailScene
@@ -100,6 +101,7 @@ def create_dispatcher() -> Dispatcher:
     dispatcher.include_routers(
         start_router,
         home_router,
+        dismiss_router,
     )
 
     SceneRegistry(dispatcher).add(

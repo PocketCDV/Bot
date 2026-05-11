@@ -1,5 +1,7 @@
 button-back = 👈 Назад
 
+button-dismiss = 👌 Закрыть
+
 button-flip-page =
     .forwards = ▶️
     .backwards = ◀️

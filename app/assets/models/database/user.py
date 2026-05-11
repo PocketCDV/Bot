@@ -43,3 +43,8 @@ class User(Base):
     """
     Settings object related to user.
     """
+
+    notifications = relationship("Notification", back_populates="user")
+    """
+    All notifications related to user.
+    """

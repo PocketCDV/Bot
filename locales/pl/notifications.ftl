@@ -5,3 +5,12 @@ notifications = 🔔 <b>Powiadomienia</b>
     Powiadomienia codzienne są wysyłane rano w dni, w które masz zajęcia, i pełnią rolę planu na stronie głównej - listy wszystkich wykładów na dany dzień.
 
     Użyj przycisków poniżej, aby włączyć powiadomienia, które chcesz otrzymywać.
+
+notification-daily = 📅 <b>Dzisiejsze zajęcia</b>
+
+    { $classes }
+
+notification-upcoming = ⏰ <b>{ $title }</b> zaczyna się za godzinę.
+
+    🕒 { $start_time }
+    📍 { $room }

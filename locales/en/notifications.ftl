@@ -5,3 +5,12 @@ notifications = 🔔 <b>Notifications</b>
     Daily notifications are sent to you in the morning if you have any classes that day, and serve as a home page schedule - a list of all lectures for the day.
 
     Toggle the notifications you'd like to receive using the buttons below.
+
+notification-daily = 📅 <b>Today's classes</b>
+
+    { $classes }
+
+notification-upcoming = ⏰ <b>{ $title }</b> starts in an hour.
+
+    🕒 { $start_time }
+    📍 { $room }

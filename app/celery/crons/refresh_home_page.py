@@ -11,7 +11,8 @@ from aiogram_i18n.cores import FluentCompileCore
 from aiogram_i18n.managers.memory import MemoryManager
 from certifi import where
 from redis.asyncio import Redis
-from sqlalchemy import select
+from sqlalchemy import select, and_, or_
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.assets.controllers.cdv import CDVController
@@ -24,54 +25,10 @@ from app.assets.exceptions.invalid_session import InvalidSessionError
 from app.bot.middlewares.user_message import UserMessage
 from app.utils import get_state
 from app.celery.worker import worker, config
-from app.assets.models.database import User
+from app.assets.models.database import User, UserSettings
 
 
-async def __async_session_refresh() -> None:
-    """
-    Asynchronously refresh every user's session ID.
-    """
-
-    database: DatabaseController = DatabaseController.from_dsn(
-        config.database_dsn.get_secret_value(),
-    )
-    redis: Redis = Redis.from_url(
-        config.redis_dsn.get_secret_value(),
-        decode_responses=True,
-    )
-    client: ClientController = ClientController(
-        base_url="https://wu.cdv.pl",
-    )
-    cdv: CDVController = CDVController(
-        client,
-        ssl_context=create_default_context(cafile=where()),
-    )
-    bot: Bot = Bot(
-        token=config.telegram_bot_token.get_secret_value(),
-        default=DefaultBotProperties(parse_mode=ParseMode.HTML),
-    )
-
-    async with database.session() as database_session:
-        user_telegram_ids = await database_session.stream_scalars(
-            select(User.telegram_id)
-        )
-
-        async for telegram_id in user_telegram_ids:
-            await asyncio.sleep(0.1)
-
-            telegram_id: int = int(telegram_id)
-            state: FSMContext = get_state(redis, bot, telegram_id)
-
-            session_id: str = await state.get_value("session_id")
-
-            if session_id is None:
-                continue
-
-            new_session_id: str = await cdv.refresh_session_id(session_id)
-            await state.update_data(session_id=new_session_id)
-
-
-async def __async_home_page_refresh() -> None:
+async def __async_refresh_home_page() -> None:
     """
     Asynchronously refresh data on every user's home page.
     """
@@ -102,15 +59,25 @@ async def __async_home_page_refresh() -> None:
         default=DefaultBotProperties(parse_mode=ParseMode.HTML),
     )
 
-    async with database.session() as database_session:
-        users = await database_session.stream_scalars(
-            select(User).options(selectinload(User.settings))
+    async with database.session() as session:
+        stream = await session.stream(
+            select(User, UserSettings)
+            .join(UserSettings, User.id == UserSettings.user_id)
+            .where(
+                or_(
+                    UserSettings.upcoming_class_notifications_enabled,
+                    UserSettings.daily_class_notifications_enabled,
+                )
+            )
+            .execution_options(yield_per=100)
         )
 
-        async for user in users:
-            await asyncio.sleep(0.1)
+        async for user, settings in stream:
+            user: User
+            settings: UserSettings
 
-            user: User = user
+            await asyncio.sleep(0.5)
+
             state: FSMContext = get_state(redis, bot, user.telegram_id)
             if await state.get_state() != "home":
                 continue
@@ -122,7 +89,7 @@ async def __async_home_page_refresh() -> None:
                 _bot=bot,
             )
             i18n: I18nContext = I18nContext(
-                user.settings.locale if user.settings else None,
+                settings.locale if settings else None,
                 core,
                 MemoryManager(),
                 {},
@@ -139,22 +106,8 @@ async def __async_home_page_refresh() -> None:
             await user_message.refresh_home_page(user, daily_schedule, i18n)
 
 
-@worker.task(name="session_refresh")
-def session_refresh() -> None:
-    """
-    Celery task for refreshing every user's session ID.
-    """
-
-    if sys.platform == "win32":
-        loop = asyncio.SelectorEventLoop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(__async_session_refresh())
-    else:
-        asyncio.run(__async_session_refresh())
-
-
 @worker.task(name="home_page_refresh")
-def home_page_refresh() -> None:
+def refresh_home_page() -> None:
     """
     Celery task for refreshing every user's home page.
     """
@@ -162,6 +115,6 @@ def home_page_refresh() -> None:
     if sys.platform == "win32":
         loop = asyncio.SelectorEventLoop()
         asyncio.set_event_loop(loop)
-        loop.run_until_complete(__async_home_page_refresh())
+        loop.run_until_complete(__async_refresh_home_page())
     else:
-        asyncio.run(__async_home_page_refresh())
+        asyncio.run(__async_refresh_home_page())

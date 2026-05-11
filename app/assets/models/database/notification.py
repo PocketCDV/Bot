@@ -31,7 +31,7 @@ class Notification(Base):
     User's telegram ID.
     """
 
-    kind = Column(Enum(NotificationKind), nullable=False)
+    kind = Column(Enum(NotificationKind, create_type=False), nullable=False)
     """
     Notification kind.
     """

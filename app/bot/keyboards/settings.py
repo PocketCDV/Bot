@@ -17,10 +17,10 @@ def get_settings_keyboard(
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(
-                    text=i18n.get("button-notifications"),
-                    callback_data=SwitchSceneAction(scene="notifications").pack(),
-                ),
+                # InlineKeyboardButton(
+                #     text=i18n.get("button-notifications"),
+                #     callback_data=SwitchSceneAction(scene="notifications").pack(),
+                # ),
                 InlineKeyboardButton(
                     text=i18n.get("button-lang"),
                     callback_data=SwitchSceneAction(scene="language").pack(),

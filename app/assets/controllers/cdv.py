@@ -79,9 +79,15 @@ class CDVController:
                         cookie = response.cookies.get("WU_PHPSESSID")
                         return cookie.value if cookie else None
                     else:
-                        return None
+                        print(
+                            f"Session refresh for SID {session_id} failed because {response.status}. {await response.text()}"
+                        )
+                        pass
                 except (TypeError, ValueError):
-                    return None
+                    print(
+                        f"Session refresh for SID {session_id} failed because {response.status}. {await response.text()}"
+                    )
+                    pass
 
     async def get_schedule(
             self,

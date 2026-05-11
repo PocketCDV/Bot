@@ -9,7 +9,7 @@ from aiogram_i18n import I18nContext
 from app.assets.controllers.schedule import ScheduleController
 from app.assets.models.records.class_record import ClassRecord
 from app.assets.models.records.daily_schedule_record import DailyScheduleRecord
-from app.assets.enums import PayloadAction
+from app.assets.enums.payload_action import PayloadAction
 from app.assets.exceptions.invalid_session import InvalidSessionError
 from app.bot.keyboards.home import get_home_keyboard
 from app.bot.logger import logger

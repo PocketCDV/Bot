@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from aiohttp import ClientSession, ClientConnectorError, ServerConnectionError, ClientOSError
+from aiohttp import ClientSession, ClientConnectorError, ServerConnectionError, ClientOSError, DummyCookieJar
 
 from app.assets.controllers.session import AbstractSessionController
 
@@ -28,7 +28,11 @@ class ClientController(AbstractSessionController[ClientSession]):
         self._headers: dict | None = headers
 
     async def _create_session(self) -> ClientSession:
-        return ClientSession(base_url=self._base_url, headers=self._headers)
+        return ClientSession(
+            base_url=self._base_url,
+            headers=self._headers,
+            cookie_jar=DummyCookieJar(),
+        )
 
     async def _validate_session(self) -> bool:
         return not self._session.closed

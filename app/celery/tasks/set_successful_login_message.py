@@ -34,7 +34,7 @@ async def __async_set_successful_login_message(
     await core.startup()
 
     state: FSMContext = get_state(
-        Redis.from_url(config.redis_dsn.get_secret_value()),
+        Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True),
         bot,
         telegram_id,
     )

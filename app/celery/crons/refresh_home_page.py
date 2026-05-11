@@ -11,21 +11,19 @@ from aiogram_i18n.cores import FluentCompileCore
 from aiogram_i18n.managers.memory import MemoryManager
 from certifi import where
 from redis.asyncio import Redis
-from sqlalchemy import select, and_, or_
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy import select, or_
 
 from app.assets.controllers.cdv import CDVController
 from app.assets.controllers.client import ClientController
 from app.assets.controllers.database import DatabaseController
 from app.assets.controllers.schedule import ScheduleController
-from app.assets.models.records.daily_schedule_record import DailyScheduleRecord
 from app.assets.exceptions import BotError
 from app.assets.exceptions.invalid_session import InvalidSessionError
-from app.bot.middlewares.user_message import UserMessage
-from app.utils import get_state
-from app.celery.worker import worker, config
 from app.assets.models.database import User, UserSettings
+from app.assets.models.records.daily_schedule_record import DailyScheduleRecord
+from app.bot.middlewares.user_message import UserMessage
+from app.celery.worker import worker, config
+from app.utils import get_state
 
 
 async def __async_refresh_home_page() -> None:
@@ -106,7 +104,7 @@ async def __async_refresh_home_page() -> None:
             await user_message.refresh_home_page(user, daily_schedule, i18n)
 
 
-@worker.task(name="home_page_refresh")
+@worker.task(name="refresh_home_page")
 def refresh_home_page() -> None:
     """
     Celery task for refreshing every user's home page.

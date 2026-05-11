@@ -7,10 +7,10 @@ from aiogram.utils.payload import decode_payload
 from aiogram_i18n import I18nContext
 
 from app.assets.controllers.schedule import ScheduleController
-from app.assets.models.class_record import ClassRecord
-from app.assets.models.schedule_day_record import ScheduleDayRecord
-from app.bot.enums.payload_action import PayloadAction
-from app.bot.exceptions.invalid_session import InvalidSessionError
+from app.assets.models.records.class_record import ClassRecord
+from app.assets.models.records.daily_schedule_record import DailyScheduleRecord
+from app.assets.enums import PayloadAction
+from app.assets.exceptions.invalid_session import InvalidSessionError
 from app.bot.keyboards.home import get_home_keyboard
 from app.bot.logger import logger
 from app.bot.middlewares.user_message import UserMessage
@@ -48,7 +48,7 @@ class HomeScene(BaseScene, state="home"):
                 message_to_delete=message.message_id,
             )
         except InvalidSessionError:
-            await user_message.new_login(i18n)
+            await user_message.ask_to_log_in(i18n)
             await self.wizard.exit()
             return
 
@@ -81,7 +81,7 @@ class HomeScene(BaseScene, state="home"):
                 i18n,
             )
         except InvalidSessionError:
-            await user_message.edit_login(i18n)
+            await user_message.ask_to_log_in(i18n)
             await self.wizard.exit()
             return
 
@@ -101,18 +101,17 @@ class HomeScene(BaseScene, state="home"):
         await message.delete()
 
         payload: str = decode_payload(command.args)
-        action, data = payload.split(":")
+        action, payload_data = payload.split(":")
 
         if action != PayloadAction.DETAIL:
             return
 
-        term_id: int = int(data)
-        schedule: ScheduleDayRecord = ScheduleDayRecord.from_json(await state.get_value("schedule"))
+        class_id: int = int(payload_data)
+        daily_schedule: DailyScheduleRecord = DailyScheduleRecord.from_json(await state.get_value("schedule"))
         class_record: ClassRecord | None = None
 
-        for class_record in schedule.class_records:
-            if class_record.term_id == term_id:
-                class_record: ClassRecord = class_record
+        for class_record in daily_schedule.class_records:
+            if class_record.class_id == class_id:
                 break
 
         if class_record is None:
@@ -143,13 +142,13 @@ class HomeScene(BaseScene, state="home"):
         Display home page information.
         """
 
-        schedule: ScheduleDayRecord = await schedule_controller.get_home_schedule(session_id)
+        daily_schedule: DailyScheduleRecord = await schedule_controller.get_home_schedule(session_id)
 
-        if schedule.class_records:
+        if daily_schedule.class_records:
             text: str = i18n.get(
                 "home",
                 first_name=first_name,
-                classes=await schedule.to_string(bot, i18n),
+                classes=await daily_schedule.to_string(bot, i18n),
             )
         else:
             text: str = i18n.get(
@@ -160,13 +159,13 @@ class HomeScene(BaseScene, state="home"):
         if message_to_delete is not None:
             await user_message.new(
                 text,
-                reply_markup=get_home_keyboard(schedule, i18n),
+                reply_markup=get_home_keyboard(daily_schedule, i18n),
                 message_to_delete=message_to_delete,
             )
         else:
             await user_message.edit(
                 text,
-                reply_markup=get_home_keyboard(schedule, i18n),
+                reply_markup=get_home_keyboard(daily_schedule, i18n),
             )
 
-        await state.update_data(schedule=schedule.to_json())
+        await state.update_data(schedule=daily_schedule.to_json())

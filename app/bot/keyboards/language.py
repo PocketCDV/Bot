@@ -4,7 +4,7 @@ from aiogram_i18n import I18nContext
 
 from app.bot.actions.back import BackAction
 from app.bot.actions.switch_language import SwitchLanguageAction
-from app.bot.enums.language import Language
+from app.assets.enums.language import Language
 
 
 def get_language_keyboard(

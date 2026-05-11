@@ -5,9 +5,9 @@ from typing import Any, Dict, List, Sequence
 from aiohttp import ClientTimeout
 
 from app.assets.controllers.client import ClientController
-from app.assets.models.class_entry import ClassEntry
-from app.bot.exceptions import BotError
-from app.bot.exceptions.invalid_session import InvalidSessionError
+from app.assets.models.records.raw_class_record import RawClassRecord
+from app.assets.exceptions import BotError
+from app.assets.exceptions.invalid_session import InvalidSessionError
 
 
 class CDVController:
@@ -88,7 +88,7 @@ class CDVController:
             session_id: str,
             start_date: date,
             end_date: date,
-    ) -> Sequence[ClassEntry]:
+    ) -> Sequence[RawClassRecord]:
         """
         Retrieves all user's class entries as a sorted sequence using WU session ID.
         :param session_id: WU session ID.
@@ -98,7 +98,7 @@ class CDVController:
         :raises InvalidSessionError: If session ID is invalid.
         """
 
-        class_entries: List[ClassEntry] = []
+        raw_class_records: List[RawClassRecord] = []
 
         async with self._client.session() as client_session:
             async with client_session.post(
@@ -119,11 +119,11 @@ class CDVController:
             raise BotError("An error occurred while retrieving schedule data")
 
         for data_entry in data["return"]:
-            class_entries.append(ClassEntry.from_data(data_entry))
+            raw_class_records.append(RawClassRecord.from_data(data_entry))
 
-        class_entries.sort(key=lambda entry: entry.start_time)
+        raw_class_records.sort(key=lambda entry: entry.start_time)
 
-        return class_entries
+        return raw_class_records
 
     async def get_teacher_full_name(
             self,

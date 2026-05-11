@@ -61,6 +61,12 @@ class Config(BaseSettings):
     URL for Telegram login web app.
     """
 
+    timezone: str = "Europe/Warsaw"
+    """
+    IANA timezone name used to derive local time for user-facing
+    schedule logic.
+    """
+
     log_level: int = 40
     """
     Application logging level. 10 for debug, 20 for info, 30 for warnings, 40 for errors.

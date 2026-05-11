@@ -22,17 +22,25 @@ def create_worker() -> Celery:
 
     celery.conf.update(
         task_time_limit=30,
-        worker_max_tasks_per_child=100,
+        worker_max_tasks_per_child=None,
     )
 
     celery.conf.beat_schedule = {
-        "cron_session_refresh": {
-            "task": "session_refresh",
+        "cron_refresh_session": {
+            "task": "refresh_session",
             "schedule": crontab(minute="5,15,25,35,45,55"),
         },
-        "cron_home_page_refresh": {
-            "task": "home_page_refresh",
+        "cron_refresh_home_page": {
+            "task": "refresh_home_page",
             "schedule": crontab(minute="0,10,20,30,40,50"),
+        },
+        "cron_plan_notifications": {
+            "task": "plan_notifications",
+            "schedule": crontab(hour=2, minute=0),
+        },
+        "cron_dispatch_notifications": {
+            "task": "dispatch_notifications",
+            "schedule": crontab(minute="*/5"),
         },
     }
 

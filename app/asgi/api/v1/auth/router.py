@@ -1,5 +1,6 @@
 import asyncio
 from typing import Annotated
+from uuid import UUID
 
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
@@ -7,6 +8,7 @@ from aiogram.utils.web_app import safe_parse_webapp_init_data, WebAppInitData
 from aiohttp import ClientConnectionError
 from fastapi import APIRouter, Depends
 from redis.asyncio import Redis
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -25,9 +27,9 @@ from app.asgi.dependencies import (
 from app.asgi.limiter import limiter
 from app.asgi.logger import logger
 from app.assets.controllers.cdv import CDVController
-from app.bot.utils import get_state
+from app.utils import get_state
 from app.celery.tasks import set_successful_login_message
-from app.database.models import User
+from app.assets.models.database import User, UserSettings
 from config import Config
 
 auth_router: APIRouter = APIRouter(prefix="/auth", tags=["Auth"])
@@ -89,29 +91,42 @@ async def login(
     except (ClientConnectionError, asyncio.TimeoutError):
         raise ServerUnavailableError("WU Server is unavailable")
 
-    upsert = (
+    user_upsert_result = await database_session.execute(
         insert(User)
         .values(
             telegram_id=telegram_init_data.user.id,
             first_name=telegram_init_data.user.first_name,
-            locale=telegram_init_data.user.language_code,
         )
         .on_conflict_do_update(
             index_elements=["telegram_id"],
             set_={
                 "first_name": telegram_init_data.user.first_name,
-                "locale": telegram_init_data.user.language_code,
             },
         )
-        .returning(User.telegram_id, User.locale)
+        .returning(User.id)
     )
-    telegram_id, locale = (await database_session.execute(upsert)).one()
+    user_id: UUID = user_upsert_result.scalar_one()
+
+    await database_session.execute(
+        insert(UserSettings)
+        .values(
+            user_id=user_id,
+            locale=telegram_init_data.user.language_code,
+        )
+        .on_conflict_do_nothing()
+    )
     await database_session.commit()
 
-    state: FSMContext = get_state(redis, bot, telegram_id)
+    settings_result = await database_session.execute(
+        select(UserSettings.locale)
+        .filter_by(user_id=user_id)
+    )
+    locale: str = settings_result.scalar_one()
+
+    state: FSMContext = get_state(redis, bot, telegram_init_data.user.id)
     await state.update_data(session_id=session_id)
 
     set_successful_login_message.delay(
-        telegram_id=telegram_id,
-        locale=locale,
+        telegram_id=telegram_init_data.user.id,
+        locale=locale or telegram_init_data.user.language_code,
     )

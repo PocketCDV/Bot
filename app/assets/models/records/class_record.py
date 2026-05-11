@@ -6,8 +6,8 @@ from aiogram.utils.deep_linking import create_start_link
 from aiogram_i18n import I18nContext
 from pydantic import BaseModel
 
-from app.assets.models.class_entry import ClassEntry
-from app.bot.enums.payload_action import PayloadAction
+from app.assets.models.records.raw_class_record import RawClassRecord
+from app.assets.enums.payload_action import PayloadAction
 
 
 class ClassRecord(BaseModel):
@@ -15,7 +15,7 @@ class ClassRecord(BaseModel):
     Contains all required information about a class for it to be displayed.
     """
 
-    term_id: int
+    class_id: int
     """
     Class ID.
     """
@@ -75,31 +75,31 @@ class ClassRecord(BaseModel):
     @classmethod
     def from_entry(
             cls,
-            class_entry: ClassEntry,
+            raw_class_record: RawClassRecord,
             room_names: Mapping[int, str],
             teacher_names: Mapping[int, str],
     ) -> 'ClassRecord':
         """
-        Returns a ClassRecord object from ClassEntry object and mappings for room and teacher names.
-        :param class_entry: ClassEntry object.
+        Returns a ClassRecord object from RawClassRecord object and mappings for room and teacher names.
+        :param raw_class_record: RawClassRecord object.
         :param room_names: Mapping of room IDs to names.
         :param teacher_names: Mapping of teacher IDs to names.
         :return: ClassRecord object.
         """
 
         return cls(
-            term_id=class_entry.term_id,
-            title=class_entry.title,
-            module=class_entry.module,
-            form=class_entry.form,
-            start_time=class_entry.start_time,
-            end_time=class_entry.end_time,
-            room_id=class_entry.room_id,
-            room_name=room_names.get(class_entry.room_id, "Unknown room"),
-            teacher_name=teacher_names.get(class_entry.teacher_id, "Unknown lecturer"),
-            teacher_id=class_entry.teacher_id,
-            online_meeting_url=class_entry.hangout_link,
-            is_cancelled=class_entry.status == "CANCELLED",
+            class_id=raw_class_record.class_id,
+            title=raw_class_record.title,
+            module=raw_class_record.module,
+            form=raw_class_record.form,
+            start_time=raw_class_record.start_time,
+            end_time=raw_class_record.end_time,
+            room_id=raw_class_record.room_id,
+            room_name=room_names.get(raw_class_record.room_id, "Unknown room"),
+            teacher_name=teacher_names.get(raw_class_record.teacher_id, "Unknown lecturer"),
+            teacher_id=raw_class_record.teacher_id,
+            online_meeting_url=raw_class_record.hangout_link,
+            is_cancelled=raw_class_record.status == "CANCELLED",
         )
 
     @classmethod
@@ -143,7 +143,7 @@ class ClassRecord(BaseModel):
             room=self.room_name,
             detail=await create_start_link(
                 bot,
-                payload=f"{PayloadAction.DETAIL}:{self.term_id}",
+                payload=f"{PayloadAction.DETAIL}:{self.class_id}",
                 encode=True,
             )
         )

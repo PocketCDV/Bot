@@ -1,5 +1,7 @@
 button-back = 👈 Назад
 
+button-dismiss = 👌 Закрыть
+
 button-flip-page =
     .forwards = ▶️
     .backwards = ◀️
@@ -25,3 +27,17 @@ button-language = { $language ->
 button-join-meeting = 📲 Подключиться к встрече
 
 button-join-meeting-named = 📲 Подключиться к { $meeting }
+
+button-settings = ⚙️ Настройки
+
+button-notifications = 🔔 Уведомления
+
+button-toggle-upcoming-notifications = { $enabled ->
+    [true] ✅ Уведомления о ближайших парах
+   *[false] ❌ Уведомления о ближайших парах
+}
+
+button-toggle-daily-notifications = { $enabled ->
+    [true] ✅ Ежедневные уведомления о парах
+   *[false] ❌ Ежедневные уведомления о парах
+}

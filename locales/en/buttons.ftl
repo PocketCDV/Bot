@@ -1,5 +1,7 @@
 button-back = 👈 Back
 
+button-dismiss = 👌 Dismiss
+
 button-flip-page =
     .forwards = ▶️
     .backwards = ◀️
@@ -25,3 +27,17 @@ button-language = { $language ->
 button-join-meeting = 📲 Join Meeting
 
 button-join-meeting-named = 📲 Join { $meeting }
+
+button-settings = ⚙️ Settings
+
+button-notifications = 🔔 Notifications
+
+button-toggle-upcoming-notifications = { $enabled ->
+    [true] ✅ Upcoming class notifications
+   *[false] ❌ Upcoming class notifications
+}
+
+button-toggle-daily-notifications = { $enabled ->
+    [true] ✅ Daily class notifications
+   *[false] ❌ Daily class notifications
+}

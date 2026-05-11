@@ -8,7 +8,7 @@ from certifi import where
 from sqlalchemy.dialects.postgresql import insert
 
 from app.assets.controllers.database import DatabaseController
-from app.database.models import Room
+from app.assets.models.database import Room
 from config import config
 
 SSL_CONTEXT: SSLContext = create_default_context(cafile=where())

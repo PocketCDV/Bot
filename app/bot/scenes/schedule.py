@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone, timedelta
+from datetime import date, timedelta
 from typing import Dict, Any, Tuple
 
 from aiogram import Bot
@@ -11,15 +11,16 @@ from aiogram_i18n import I18nContext
 
 from app.asgi.logger import logger
 from app.assets.controllers.schedule import ScheduleController
-from app.assets.models.class_record import ClassRecord
-from app.assets.models.schedule_day_record import ScheduleDayRecord
-from app.assets.models.schedule_record import ScheduleRecord
+from app.assets.models.records.class_record import ClassRecord
+from app.assets.models.records.daily_schedule_record import DailyScheduleRecord
+from app.assets.models.records.schedule_record import ScheduleRecord
 from app.bot.actions.flip_page import FlipPageAction
-from app.bot.enums.payload_action import PayloadAction
-from app.bot.exceptions.invalid_session import InvalidSessionError
+from app.assets.enums import PayloadAction
+from app.assets.exceptions.invalid_session import InvalidSessionError
 from app.bot.keyboards.schedule import get_schedule_keyboard
 from app.bot.middlewares.user_message import UserMessage
 from app.bot.scenes.base import BaseScene
+from app.utils import today_local
 
 
 class ScheduleScene(BaseScene, state="schedule"):
@@ -43,11 +44,11 @@ class ScheduleScene(BaseScene, state="schedule"):
             if session_id is None:
                 raise InvalidSessionError
 
-            schedule_date: date = initial_date or datetime.now(timezone.utc).date()
+            schedule_date: date = initial_date or today_local()
             start_date, end_date = self._get_week_range_by_date(schedule_date)
             schedule: ScheduleRecord = await schedule_controller.get_schedule(start_date, end_date, session_id)
         except InvalidSessionError:
-            await user_message.edit_login(i18n)
+            await user_message.ask_to_log_in(i18n)
             await self.wizard.exit()
             return
 
@@ -86,7 +87,7 @@ class ScheduleScene(BaseScene, state="schedule"):
                 data, callback_data.offset, session_id, schedule_controller
             )
         except InvalidSessionError:
-            await user_message.edit_login(i18n)
+            await user_message.ask_to_log_in(i18n)
             await self.wizard.exit()
             return
 
@@ -117,17 +118,16 @@ class ScheduleScene(BaseScene, state="schedule"):
         if action != PayloadAction.DETAIL:
             return
 
-        term_id: int = int(payload_data)
+        class_id: int = int(payload_data)
 
         data: Dict[str, Any] = await state.get_data()
 
         schedule_date: date = date.fromisoformat(data["schedule_date"])
-        schedule: ScheduleDayRecord | None = ScheduleRecord.from_json(data["schedule"]).schedule.get(schedule_date)
+        daily_schedule: DailyScheduleRecord | None = ScheduleRecord.from_json(data["schedule"]).schedule.get(schedule_date)
         class_record: ClassRecord | None = None
 
-        for class_record in schedule.class_records:
-            if class_record.term_id == term_id:
-                class_record: ClassRecord = class_record
+        for class_record in daily_schedule.class_records:
+            if class_record.class_id == class_id:
                 break
 
         if class_record is None:

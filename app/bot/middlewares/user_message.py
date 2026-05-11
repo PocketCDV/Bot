@@ -1,5 +1,6 @@
 import asyncio
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Callable, Any, Awaitable, Dict, Coroutine, List
 
 from aiogram import BaseMiddleware, Bot
@@ -8,7 +9,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import TelegramObject, User, InlineKeyboardMarkup, Message, LinkPreviewOptions
 from aiogram_i18n import I18nContext
 
+from app.assets.models.records.daily_schedule_record import DailyScheduleRecord
+from app.bot.keyboards.home import get_home_keyboard
 from app.bot.keyboards.login import get_login_keyboard
+from app.utils import now_local
 
 
 @dataclass
@@ -95,13 +99,28 @@ class UserMessage:
             if self.message_id is None:
                 raise ValueError
 
-            await self._bot.edit_message_text(
-                chat_id=self.user_id,
-                message_id=self.message_id,
-                text=text,
-                reply_markup=reply_markup,
-                link_preview_options=LinkPreviewOptions(is_disabled=True),
-            )
+            coroutines: List[Coroutine] = [
+                self._bot.edit_message_text(
+                    chat_id=self.user_id,
+                    message_id=self.message_id,
+                    text=text,
+                    reply_markup=reply_markup,
+                    link_preview_options=LinkPreviewOptions(is_disabled=True),
+                ),
+            ]
+
+            if message_to_delete is not None:
+                coroutines.append(
+                    self._bot.delete_message(
+                        self.user_id,
+                        message_to_delete,
+                    ),
+                )
+
+            result, *_ = await asyncio.gather(*coroutines, return_exceptions=True)
+
+            if isinstance(result, Exception):
+                raise result
         except (TelegramBadRequest, ValueError) as error:
             if isinstance(error, TelegramBadRequest) and "message is not modified" in error.message:
                 return
@@ -112,7 +131,35 @@ class UserMessage:
                 message_to_delete=message_to_delete,
             )
 
-    async def new_login(
+    async def refresh_home_page(
+            self,
+            user: User,
+            daily_schedule: DailyScheduleRecord,
+            i18n: I18nContext,
+    ) -> None:
+        time: datetime = now_local()
+
+        if daily_schedule.class_records:
+            await self.edit(
+                i18n.get(
+                    "home-updated",
+                    first_name=user.first_name,
+                    classes=await daily_schedule.to_string(self._bot, i18n),
+                    updated=time.strftime("%H:%M"),
+                ),
+                reply_markup=get_home_keyboard(daily_schedule, i18n),
+            )
+        else:
+            await self.edit(
+                i18n.get(
+                    "home-no-classes-updated",
+                    first_name=user.first_name,
+                    updated=time.strftime("%H:%M"),
+                ),
+                reply_markup=get_home_keyboard(daily_schedule, i18n),
+            )
+
+    async def ask_to_log_in(
             self,
             i18n: I18nContext,
             *,
@@ -124,24 +171,10 @@ class UserMessage:
         :param message_to_delete: Message ID which should be deleted alongside with an old message.
         """
 
-        await self.new(
-            i18n.get("login"),
-            reply_markup=get_login_keyboard(i18n),
-            message_to_delete=message_to_delete,
-        )
-
-    async def edit_login(
-            self,
-            i18n: I18nContext,
-    ) -> None:
-        """
-        Edit message to make it say that user should log in.
-        :param i18n: I18n context.
-        """
-
         await self.edit(
             i18n.get("login"),
             reply_markup=get_login_keyboard(i18n),
+            message_to_delete=message_to_delete,
         )
 
 

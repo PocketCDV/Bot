@@ -14,17 +14,20 @@ from app.assets.controllers.cdv import CDVController
 from app.assets.controllers.client import ClientController
 from app.assets.controllers.database import DatabaseController
 from app.assets.controllers.schedule import ScheduleController
-from app.bot.managers.locale import LocaleManager
+from app.bot.locale_manager import LocaleManager
 from app.bot.middlewares.database import DatabaseMiddleware
 from app.bot.middlewares.user_message import UserMessageMiddleware
 from app.bot.middlewares.session_id import SessionIDMiddleware
 from app.bot.middlewares.user import UserMiddleware
+from app.bot.routes.dismiss import dismiss_router
 from app.bot.routes.home import home_router
 from app.bot.routes.start import start_router
 from app.bot.scenes.detail import DetailScene
 from app.bot.scenes.home import HomeScene
 from app.bot.scenes.language import LanguageScene
+from app.bot.scenes.notifications import NotificationsScene
 from app.bot.scenes.schedule import ScheduleScene
+from app.bot.scenes.settings import SettingsScene
 from app.bot.scenes.start import StartScene
 from config import config
 
@@ -98,6 +101,7 @@ def create_dispatcher() -> Dispatcher:
     dispatcher.include_routers(
         start_router,
         home_router,
+        dismiss_router,
     )
 
     SceneRegistry(dispatcher).add(
@@ -105,6 +109,8 @@ def create_dispatcher() -> Dispatcher:
         HomeScene,
         ScheduleScene,
         DetailScene,
+        SettingsScene,
+        NotificationsScene,
         LanguageScene,
     )
 

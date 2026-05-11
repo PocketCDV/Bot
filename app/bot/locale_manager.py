@@ -1,9 +1,9 @@
 from aiogram.types import User as AiogramUser
 from aiogram_i18n.managers import BaseManager
-from sqlalchemy import update
+from sqlalchemy import select, update
 
 from app.assets.controllers.database import DatabaseController
-from app.database.models import User
+from app.assets.models.database import User, UserSettings
 
 
 class LocaleManager(BaseManager):
@@ -39,7 +39,7 @@ class LocaleManager(BaseManager):
         if user is None:
             return self.default_locale if event_from_user is None else event_from_user.language_code
 
-        return user.locale
+        return user.settings.locale if user.settings else None
 
     async def set_locale(
             self,
@@ -59,8 +59,12 @@ class LocaleManager(BaseManager):
 
         async with database.session() as database_session:
             await database_session.execute(
-                update(User)
-                .filter_by(telegram_id=event_from_user.id)
+                update(UserSettings)
+                .where(
+                    UserSettings.user_id == select(User.id)
+                    .filter_by(telegram_id=event_from_user.id)
+                    .scalar_subquery()
+                )
                 .values(locale=locale)
             )
             await database_session.commit()

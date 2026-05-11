@@ -1,8 +1,13 @@
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
+
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import DefaultKeyBuilder, StorageKey
 from aiogram.fsm.storage.redis import RedisStorage
 from redis.asyncio import Redis
+
+from config import config
 
 
 def get_state(
@@ -29,3 +34,19 @@ def get_state(
             user_id=telegram_id,
         )
     )
+
+
+def now_local() -> datetime:
+    """
+    Returns the current time in the configured local timezone.
+    """
+
+    return datetime.now(ZoneInfo(config.timezone))
+
+
+def today_local() -> date:
+    """
+    Returns today's date in the configured local timezone.
+    """
+
+    return now_local().date()

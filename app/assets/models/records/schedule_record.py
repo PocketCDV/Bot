@@ -5,18 +5,18 @@ from aiogram import Bot
 from aiogram_i18n import I18nContext
 from pydantic import BaseModel, Field
 
-from app.assets.models.schedule_day_record import ScheduleDayRecord
+from app.assets.models.records.daily_schedule_record import DailyScheduleRecord
 
 
 class ScheduleRecord(BaseModel):
     """
-    Contains a mapping of dates to ScheduleDayRecord objects,
+    Contains a mapping of dates to DailyScheduleRecord objects,
     represents a day-separated schedule on a range of dates.
     """
 
-    schedule: Dict[date, ScheduleDayRecord] = Field(default_factory=dict)
+    schedule: Dict[date, DailyScheduleRecord] = Field(default_factory=dict)
     """
-    Mapping of dates to ScheduleDayRecord objects.
+    Mapping of dates to DailyScheduleRecord objects.
     """
 
     @classmethod
@@ -31,7 +31,7 @@ class ScheduleRecord(BaseModel):
         """
 
         return ScheduleRecord(
-            schedule={date.fromisoformat(schedule_date): ScheduleDayRecord.from_json(record)
+            schedule={date.fromisoformat(schedule_date): DailyScheduleRecord.from_json(record)
                       for schedule_date, record in data.get("schedule").items()},
         )
 
@@ -53,18 +53,18 @@ class ScheduleRecord(BaseModel):
             i18n: I18nContext,
     ) -> str | None:
         """
-        Converts ScheduleDayRecord object selected by a date to a string representation.
+        Converts DailyScheduleRecord object selected by a date to a string representation.
         If date is not present in schedule, returns an empty string.
 
-        :param schedule_date: Date for ScheduleDayRecord.
+        :param schedule_date: Date for DailyScheduleRecord.
         :param bot: Bot instance.
         :param i18n: I18n context.
         :return: String representation.
         """
 
-        schedule_day: ScheduleDayRecord | None = self.schedule.get(schedule_date)
+        daily_schedule: DailyScheduleRecord | None = self.schedule.get(schedule_date)
 
-        if schedule_day is None:
+        if daily_schedule is None:
             return ""
 
-        return await schedule_day.to_string(bot, i18n)
+        return await daily_schedule.to_string(bot, i18n)

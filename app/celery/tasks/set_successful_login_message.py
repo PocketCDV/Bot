@@ -5,13 +5,13 @@ from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram_i18n import I18nContext
 from aiogram_i18n.cores import FluentCompileCore
+from aiogram_i18n.managers.memory import MemoryManager
 from redis.asyncio import Redis
 
-from app.bot.actions.home import HomeAction
 from app.bot.middlewares.user_message import UserMessage
-from app.bot.utils import get_state
+from app.utils import get_state
 from app.celery.worker import worker, config
 
 
@@ -34,7 +34,7 @@ async def __async_set_successful_login_message(
     await core.startup()
 
     state: FSMContext = get_state(
-        Redis.from_url(config.redis_dsn.get_secret_value()),
+        Redis.from_url(config.redis_dsn.get_secret_value(), decode_responses=True),
         bot,
         telegram_id,
     )
@@ -45,18 +45,8 @@ async def __async_set_successful_login_message(
         _bot=bot,
     )
 
-    await user_message.edit(
-        core.get_translator(locale).format("login-success")[0],
-        reply_markup=InlineKeyboardMarkup(
-            inline_keyboard=[
-                [
-                    InlineKeyboardButton(
-                        text=core.get_translator(locale).format("button-go-home")[0],
-                        callback_data=HomeAction().pack(),
-                    )
-                ]
-            ]
-        )
+    await user_message.ask_to_log_in(
+        I18nContext(locale, core, MemoryManager(), {})
     )
 
 
